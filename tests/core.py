@@ -979,12 +979,18 @@ class CoreTest(unittest.TestCase):
         session.query(models.DagStat).delete()
         session.commit()
 
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            models.DagStat.clean_dirty([], session=session)
+        self.assertEqual([], caught_warnings)
+
         run1 = self.dag_bash.create_dagrun(
             run_id="run1",
             execution_date=DEFAULT_DATE,
             state=State.RUNNING)
 
-        models.DagStat.clean_dirty([self.dag_bash.dag_id], session=session)
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            models.DagStat.clean_dirty([self.dag_bash.dag_id], session=session)
+        self.assertEqual([], caught_warnings)
 
         qry = session.query(models.DagStat).all()
 
@@ -999,7 +1005,9 @@ class CoreTest(unittest.TestCase):
             execution_date=DEFAULT_DATE+timedelta(days=1),
             state=State.RUNNING)
 
-        models.DagStat.clean_dirty([self.dag_bash.dag_id], session=session)
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            models.DagStat.clean_dirty([self.dag_bash.dag_id], session=session)
+        self.assertEqual([], caught_warnings)
 
         qry = session.query(models.DagStat).all()
 
@@ -1012,7 +1020,9 @@ class CoreTest(unittest.TestCase):
         session.query(models.DagRun).first().state = State.SUCCESS
         session.commit()
 
-        models.DagStat.clean_dirty([self.dag_bash.dag_id], session=session)
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            models.DagStat.clean_dirty([self.dag_bash.dag_id], session=session)
+        self.assertEqual([], caught_warnings)
 
         qry = session.query(models.DagStat).filter(models.DagStat.state == State.SUCCESS).all()
         assert len(qry) == 1
