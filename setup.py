@@ -255,7 +255,7 @@ def do_setup():
             'password': password,
             # 'postgres': postgres,
             # 'qds': qds,
-            # 'rabbitmq': rabbitmq,
+            'rabbitmq': rabbitmq,
             's3': s3,
             # 'salesforce': salesforce,
             # 'samba': samba,
