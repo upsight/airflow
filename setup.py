@@ -101,7 +101,7 @@ def write_version(filename=os.path.join(*['airflow',
 
 async = [
     'greenlet>=0.4.9',
-    'eventlet>= 0.9.7',
+#   'eventlet>= 0.9.7',
     'gevent>=0.13'
 ]
 celery = [
