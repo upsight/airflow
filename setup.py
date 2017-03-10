@@ -116,8 +116,8 @@ datadog = ['datadog>=0.14.0']
 doc = [
     'sphinx>=1.2.3',
     'sphinx-argparse>=0.1.13',
-    'sphinx-rtd-theme>=0.1.6',
-    'Sphinx-PyPI-upload>=0.2.1'
+#   'sphinx-rtd-theme>=0.1.6',
+#   'Sphinx-PyPI-upload>=0.2.1'
 ]
 docker = ['docker-py>=1.6.0']
 druid = ['pydruid>=0.2.1']
