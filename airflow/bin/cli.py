@@ -132,6 +132,19 @@ def get_dag(args):
     return dagbag.dags[args.dag_id]
 
 
+def use_virtualenv(command):
+    """
+    If we're in a virtualenv, ensure we call the given command using the
+    its virtualenv wrapped script. Otherwise, just return command.
+
+    Example: gunicorn -> /path/to/venv/bin/gunicorn
+    """
+    if hasattr(sys, 'real_prefix'):
+        return os.path.join(os.path.dirname(sys.executable), command)
+
+    return command
+
+
 def backfill(args, dag=None):
     logging.basicConfig(
         level=settings.LOGGING_LEVEL,
@@ -770,7 +783,7 @@ def webserver(args):
             '''.format(**locals())))
 
         run_args = [
-            'gunicorn',
+            use_virtualenv('gunicorn'),
             '-w', str(num_workers),
             '-k', str(args.workerclass),
             '-t', str(worker_timeout),
@@ -793,7 +806,8 @@ def webserver(args):
 
         run_args += ["airflow.www.app:cached_app()"]
 
-        gunicorn_master_proc = subprocess.Popen(run_args)
+        env = os.environ.copy()
+        gunicorn_master_proc = subprocess.Popen(run_args, env=env)
 
         def kill_proc(dummy_signum, dummy_frame):
             gunicorn_master_proc.terminate()
@@ -892,7 +906,8 @@ def worker(args):
             stderr=stderr,
         )
         with ctx:
-            sp = subprocess.Popen(['airflow', 'serve_logs'], env=env)
+            sp = subprocess.Popen([use_virtualenv('airflow'), 'serve_logs'],
+                                  env=env)
             worker.run(**options)
             sp.kill()
 
@@ -902,7 +917,8 @@ def worker(args):
         signal.signal(signal.SIGINT, sigint_handler)
         signal.signal(signal.SIGTERM, sigint_handler)
 
-        sp = subprocess.Popen(['airflow', 'serve_logs'], env=env)
+        sp = subprocess.Popen([use_virtualenv('airflow'), 'serve_logs'],
+                              env=env)
 
         worker.run(**options)
         sp.kill()
@@ -1063,7 +1079,8 @@ def flower(args):
         flower_conf = '--conf=' + args.flower_conf
 
     if args.daemon:
-        pid, stdout, stderr, log_file = setup_locations("flower", args.pid, args.stdout, args.stderr, args.log_file)
+        pid, stdout, stderr, log_file = setup_locations(
+            "flower", args.pid, args.stdout, args.stderr, args.log_file)
         stdout = open(stdout, 'w+')
         stderr = open(stderr, 'w+')
 
@@ -1074,7 +1091,8 @@ def flower(args):
         )
 
         with ctx:
-            os.execvp("flower", ['flower', '-b', broka, address, port, api, flower_conf])
+            os.execvp(use_virtualenv("flower"),
+                      ['flower', '-b', broka, address, port, api, flower_conf])
 
         stdout.close()
         stderr.close()
@@ -1082,7 +1100,8 @@ def flower(args):
         signal.signal(signal.SIGINT, sigint_handler)
         signal.signal(signal.SIGTERM, sigint_handler)
 
-        os.execvp("flower", ['flower', '-b', broka, address, port, api, flower_conf])
+        os.execvp(use_virtualenv("flower"),
+                  ['flower', '-b', broka, address, port, api, flower_conf])
 
 
 def kerberos(args):  # noqa
