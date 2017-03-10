@@ -166,7 +166,8 @@ github_enterprise = ['Flask-OAuthlib>=0.9.1']
 qds = ['qds-sdk>=1.9.0']
 cloudant = ['cloudant>=0.5.9,<2.0'] # major update coming soon, clamp to 0.x
 
-all_dbs = postgres + mysql + hive + mssql + hdfs + vertica + cloudant
+# all_dbs = postgres + mysql + hive + mssql + hdfs + vertica + cloudant
+all_dbs = mysql + hive + hdfs
 devel = [
     'click',
     'freezegun',
@@ -180,7 +181,8 @@ devel = [
 ]
 devel_minreq = devel + mysql + doc + password + s3 + cgroups
 devel_hadoop = devel_minreq + hive + hdfs + webhdfs + kerberos
-devel_all = devel + all_dbs + doc + samba + s3 + slack + crypto + oracle + docker
+# devel_all = devel + all_dbs + doc + samba + s3 + slack + crypto + oracle + docker
+devel_all = devel + all_dbs + doc + s3 + crypto
 
 
 def do_setup():
@@ -231,35 +233,35 @@ def do_setup():
             'async': async,
             'celery': celery,
             'cgroups': cgroups,
-            'cloudant': cloudant,
+            # 'cloudant': cloudant,
             'crypto': crypto,
-            'datadog': datadog,
+            # 'datadog': datadog,
             'devel': devel_minreq,
             'devel_hadoop': devel_hadoop,
             'doc': doc,
-            'docker': docker,
-            'druid': druid,
-            'emr': emr,
-            'gcp_api': gcp_api,
-            'github_enterprise': github_enterprise,
+            # 'docker': docker,
+            # 'druid': druid,
+            # 'emr': emr,
+            # 'gcp_api': gcp_api,
+            # 'github_enterprise': github_enterprise,
             'hdfs': hdfs,
             'hive': hive,
             'jdbc': jdbc,
             'kerberos': kerberos,
-            'ldap': ldap,
-            'mssql': mssql,
+            # 'ldap': ldap,
+            # 'mssql': mssql,
             'mysql': mysql,
-            'oracle': oracle,
+            # 'oracle': oracle,
             'password': password,
-            'postgres': postgres,
-            'qds': qds,
-            'rabbitmq': rabbitmq,
+            # 'postgres': postgres,
+            # 'qds': qds,
+            # 'rabbitmq': rabbitmq,
             's3': s3,
-            'salesforce': salesforce,
-            'samba': samba,
-            'slack': slack,
+            # 'salesforce': salesforce,
+            # 'samba': samba,
+            # 'slack': slack,
             'statsd': statsd,
-            'vertica': vertica,
+            # 'vertica': vertica,
             'webhdfs': webhdfs,
             'jira': jira,
         },
