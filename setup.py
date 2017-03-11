@@ -171,7 +171,7 @@ all_dbs = mysql + hive + hdfs
 devel = [
     'click',
     'freezegun',
-    'jira',
+#   'jira',
     'lxml>=3.3.4',
     'mock',
     'moto',
@@ -213,7 +213,8 @@ def do_setup():
             'gunicorn>=19.3.0, <19.4.0',  # 19.4.? seemed to have issues
             'jinja2>=2.7.3, <2.9.0',
             'lxml>=3.6.0, <4.0',
-            'markdown>=2.5.2, <3.0',
+            #'markdown>=2.5.2, <3.0',
+            'markdown==2.5.2',  # getting "error: [Errno 2] No such file or directory: 'docs/_template.html'"
             'pandas>=0.17.1, <1.0.0',
             'psutil>=4.2.0, <5.0.0',
             'pygments>=2.0.1, <3.0',
@@ -263,7 +264,7 @@ def do_setup():
             'statsd': statsd,
             # 'vertica': vertica,
             'webhdfs': webhdfs,
-            'jira': jira,
+            # 'jira': jira,
         },
         classifiers=[
             'Development Status :: 5 - Production/Stable',
