@@ -18,6 +18,7 @@ from __future__ import unicode_literals
 import errno
 import os
 import shutil
+import sys
 from tempfile import mkdtemp
 
 from contextlib import contextmanager
@@ -57,3 +58,16 @@ def mkdirs(path, mode):
     os.chmod(path, mode)
     res += [path]
     return res
+
+
+def use_virtualenv(command):
+    """
+    If we're in a virtualenv, ensure we call the given command using the
+    its virtualenv wrapped script. Otherwise, just return command.
+
+    Example: gunicorn -> /path/to/venv/bin/gunicorn
+    """
+    if hasattr(sys, 'real_prefix'):
+        return os.path.join(os.path.dirname(sys.executable), command)
+
+    return command
