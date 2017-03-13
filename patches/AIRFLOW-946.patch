@@ -1,7 +1,16 @@
 diff --git a/airflow/bin/cli.py b/airflow/bin/cli.py
-index fbd86db..7cbb2fc 100755
+index fbd86db..98ce66a 100755
 --- a/airflow/bin/cli.py
 +++ b/airflow/bin/cli.py
+@@ -52,7 +52,7 @@ from airflow.models import (DagModel, DagBag, TaskInstance,
+ from airflow.ti_deps.dep_context import (DepContext, SCHEDULER_DEPS)
+ from airflow.utils import db as db_utils
+ from airflow.utils import logging as logging_utils
+-from airflow.utils.file import mkdirs
++from airflow.utils.file import mkdirs, use_virtualenv
+ from airflow.www.app import cached_app
+ 
+ from sqlalchemy import func
 @@ -132,6 +132,19 @@ def get_dag(args):
      return dagbag.dags[args.dag_id]
  
@@ -91,3 +100,54 @@ index fbd86db..7cbb2fc 100755
  
  
  def kerberos(args):  # noqa
+diff --git a/airflow/models.py b/airflow/models.py
+index 62457f0..bfc8558 100755
+--- a/airflow/models.py
++++ b/airflow/models.py
+@@ -70,6 +70,7 @@ from airflow.utils.dates import cron_presets, date_range as utils_date_range
+ from airflow.utils.db import provide_session
+ from airflow.utils.decorators import apply_defaults
+ from airflow.utils.email import send_email
++from airflow.utils.file import use_virtualenv
+ from airflow.utils.helpers import (
+     as_tuple, is_container, is_in, validate_key, pprinttable)
+ from airflow.utils.logging import LoggingMixin
+@@ -898,7 +899,8 @@ class TaskInstance(Base):
+         :return: shell command that can be used to run the task instance
+         """
+         iso = execution_date.isoformat()
+-        cmd = ["airflow", "run", str(dag_id), str(task_id), str(iso)]
++        cmd = [use_virtualenv("airflow"), "run", str(dag_id), str(task_id),
++               str(iso)]
+         cmd.extend(["--mark_success"]) if mark_success else None
+         cmd.extend(["--pickle", str(pickle_id)]) if pickle_id else None
+         cmd.extend(["--job_id", str(job_id)]) if job_id else None
+diff --git a/airflow/utils/file.py b/airflow/utils/file.py
+index 78ddeaa..0c72aa5 100644
+--- a/airflow/utils/file.py
++++ b/airflow/utils/file.py
+@@ -18,6 +18,7 @@ from __future__ import unicode_literals
+ import errno
+ import os
+ import shutil
++import sys
+ from tempfile import mkdtemp
+ 
+ from contextlib import contextmanager
+@@ -57,3 +58,16 @@ def mkdirs(path, mode):
+     os.chmod(path, mode)
+     res += [path]
+     return res
++
++
++def use_virtualenv(command):
++    """
++    If we're in a virtualenv, ensure we call the given command using the
++    its virtualenv wrapped script. Otherwise, just return command.
++
++    Example: gunicorn -> /path/to/venv/bin/gunicorn
++    """
++    if hasattr(sys, 'real_prefix'):
++        return os.path.join(os.path.dirname(sys.executable), command)
++
++    return command
