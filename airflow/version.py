@@ -13,4 +13,4 @@
 # limitations under the License.
 #
 
-version = '1.8.0rc4+apache.incubating-up1.0.0'
+version = '1.8.0rc5+apache.incubating-up1.0.0'
