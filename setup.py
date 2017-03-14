@@ -101,7 +101,7 @@ def write_version(filename=os.path.join(*['airflow',
 
 async = [
     'greenlet>=0.4.9',
-    'eventlet>= 0.9.7',
+#   'eventlet>= 0.9.7',
     'gevent>=0.13'
 ]
 celery = [
@@ -116,8 +116,8 @@ datadog = ['datadog>=0.14.0']
 doc = [
     'sphinx>=1.2.3',
     'sphinx-argparse>=0.1.13',
-    'sphinx-rtd-theme>=0.1.6',
-    'Sphinx-PyPI-upload>=0.2.1'
+#   'sphinx-rtd-theme>=0.1.6',
+#   'Sphinx-PyPI-upload>=0.2.1'
 ]
 docker = ['docker-py>=1.6.0']
 druid = ['pydruid>=0.2.1']
@@ -166,11 +166,12 @@ github_enterprise = ['Flask-OAuthlib>=0.9.1']
 qds = ['qds-sdk>=1.9.0']
 cloudant = ['cloudant>=0.5.9,<2.0'] # major update coming soon, clamp to 0.x
 
-all_dbs = postgres + mysql + hive + mssql + hdfs + vertica + cloudant
+# all_dbs = postgres + mysql + hive + mssql + hdfs + vertica + cloudant
+all_dbs = mysql + hive + hdfs
 devel = [
     'click',
     'freezegun',
-    'jira',
+#   'jira',
     'lxml>=3.3.4',
     'mock',
     'moto',
@@ -178,9 +179,10 @@ devel = [
     'nose-ignore-docstring==0.2',
     'nose-parameterized',
 ]
-devel_minreq = devel + mysql + doc + password + s3 + cgroups
+devel_minreq = devel + mysql + doc + s3 + cgroups
 devel_hadoop = devel_minreq + hive + hdfs + webhdfs + kerberos
-devel_all = devel + all_dbs + doc + samba + s3 + slack + crypto + oracle + docker
+# devel_all = devel + all_dbs + doc + samba + s3 + slack + crypto + oracle + docker
+devel_all = devel + all_dbs + doc + s3 + crypto
 
 
 def do_setup():
@@ -196,7 +198,7 @@ def do_setup():
         zip_safe=False,
         scripts=['airflow/bin/airflow'],
         install_requires=[
-            'alembic>=0.8.3, <0.9',
+            'alembic>=0.8.10.dev0',  # had issues with signing
             'croniter>=0.3.8, <0.4',
             'dill>=0.2.2, <0.3',
             'flask>=0.11, <0.12',
@@ -211,7 +213,7 @@ def do_setup():
             'gunicorn>=19.3.0, <19.4.0',  # 19.4.? seemed to have issues
             'jinja2>=2.7.3, <2.9.0',
             'lxml>=3.6.0, <4.0',
-            'markdown>=2.5.2, <3.0',
+            'markdown==2.5.2',
             'pandas>=0.17.1, <1.0.0',
             'psutil>=4.2.0, <5.0.0',
             'pygments>=2.0.1, <3.0',
@@ -231,37 +233,37 @@ def do_setup():
             'async': async,
             'celery': celery,
             'cgroups': cgroups,
-            'cloudant': cloudant,
+            # 'cloudant': cloudant,
             'crypto': crypto,
-            'datadog': datadog,
+            # 'datadog': datadog,
             'devel': devel_minreq,
             'devel_hadoop': devel_hadoop,
             'doc': doc,
-            'docker': docker,
-            'druid': druid,
-            'emr': emr,
-            'gcp_api': gcp_api,
-            'github_enterprise': github_enterprise,
+            # 'docker': docker,
+            # 'druid': druid,
+            # 'emr': emr,
+            # 'gcp_api': gcp_api,
+            # 'github_enterprise': github_enterprise,
             'hdfs': hdfs,
             'hive': hive,
             'jdbc': jdbc,
             'kerberos': kerberos,
-            'ldap': ldap,
-            'mssql': mssql,
+            # 'ldap': ldap,
+            # 'mssql': mssql,
             'mysql': mysql,
-            'oracle': oracle,
-            'password': password,
-            'postgres': postgres,
-            'qds': qds,
+            # 'oracle': oracle,
+            # 'password': password,
+            # 'postgres': postgres,
+            # 'qds': qds,
             'rabbitmq': rabbitmq,
             's3': s3,
-            'salesforce': salesforce,
-            'samba': samba,
-            'slack': slack,
+            # 'salesforce': salesforce,
+            # 'samba': samba,
+            # 'slack': slack,
             'statsd': statsd,
-            'vertica': vertica,
+            # 'vertica': vertica,
             'webhdfs': webhdfs,
-            'jira': jira,
+            # 'jira': jira,
         },
         classifiers=[
             'Development Status :: 5 - Production/Stable',
