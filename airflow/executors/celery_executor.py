@@ -23,6 +23,7 @@ from celery import states as celery_states
 from airflow.exceptions import AirflowException
 from airflow.executors.base_executor import BaseExecutor
 from airflow import configuration
+from airflow.utils.sentry import SentryCelery
 
 PARALLELISM = configuration.get('core', 'PARALLELISM')
 
@@ -47,6 +48,7 @@ class CeleryConfig(object):
 app = Celery(
     configuration.get('celery', 'CELERY_APP_NAME'),
     config_source=CeleryConfig)
+SentryCelery.configure()
 
 
 @app.task

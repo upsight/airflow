@@ -440,6 +440,9 @@ api_rev = v3
 # UI to hide sensitive variable fields when set to True
 hide_sensitive_variable_fields = True
 
+[sentry]
+dsn =
+log_level = INFO
 """
 
 TEST_CONFIG = """\

@@ -26,6 +26,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.pool import NullPool
 
 from airflow import configuration as conf
+from airflow.utils.sentry import SentryLogging
 
 
 class DummyStatsLogger(object):
@@ -121,6 +122,7 @@ def configure_logging(log_format=LOG_FORMAT):
     logging.root.handlers = []
     logging.basicConfig(
         format=log_format, stream=sys.stdout, level=LOGGING_LEVEL)
+    SentryLogging.configure()
 
 
 def configure_vars():

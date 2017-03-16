@@ -149,6 +149,7 @@ s3 = [
     'filechunkio>=1.6',
 ]
 samba = ['pysmbclient>=0.1.3']
+sentry = ['raven[flask]==5.32.0']
 slack = ['slackclient>=1.0.0']
 statsd = ['statsd>=3.0.1, <4.0']
 vertica = ['vertica-python>=0.5.1']
@@ -256,6 +257,7 @@ def do_setup():
             # 'postgres': postgres,
             # 'qds': qds,
             'rabbitmq': rabbitmq,
+            'sentry': sentry,
             's3': s3,
             # 'salesforce': salesforce,
             # 'samba': samba,

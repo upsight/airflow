@@ -53,6 +53,7 @@ from airflow.ti_deps.dep_context import (DepContext, SCHEDULER_DEPS)
 from airflow.utils import db as db_utils
 from airflow.utils import logging as logging_utils
 from airflow.utils.file import mkdirs, use_virtualenv
+from airflow.utils.sentry import SentryFlask, SentryLogging
 from airflow.www.app import cached_app
 
 from sqlalchemy import func
@@ -396,6 +397,8 @@ def run(args, dag=None):
             filename=filename,
             level=settings.LOGGING_LEVEL,
             format=settings.LOG_FORMAT)
+
+    SentryLogging.configure()
 
     if not args.pickle and not dag:
         dag = get_dag(args)
@@ -745,6 +748,8 @@ def webserver(args):
     print(settings.HEADER)
 
     app = cached_app(conf)
+    SentryFlask.configure(app)
+
     access_logfile = args.access_logfile or conf.get('webserver', 'access_logfile')
     error_logfile = args.error_logfile or conf.get('webserver', 'error_logfile')
     num_workers = args.workers or conf.get('webserver', 'workers')
@@ -857,6 +862,7 @@ def serve_logs(args):
     print("Starting flask")
     import flask
     flask_app = flask.Flask(__name__)
+    SentryFlask.configure(flask_app)
 
     @flask_app.route('/log/<path:filename>')
     def serve_logs(filename):  # noqa
