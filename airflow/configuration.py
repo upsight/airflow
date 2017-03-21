@@ -442,7 +442,7 @@ hide_sensitive_variable_fields = True
 
 [sentry]
 dsn =
-log_level = INFO
+log_level = ERROR
 """
 
 TEST_CONFIG = """\
