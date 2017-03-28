@@ -4,7 +4,7 @@
 
 ## 1.8.0-up1.1.0
 
-* Pulled in airflow-1.8.0
+* Pulled in airflow-1.8.0 (no changes from rc5)
 * Fixed flask.ext.cache deprecation message ([DATA-2819](https://kontagent.jira.com/browse/DATA-2819))
 
 ## 1.8.0rc5-up1.0.0
