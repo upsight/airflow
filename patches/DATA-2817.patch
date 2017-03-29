@@ -1,0 +1,35 @@
+diff --git a/airflow/bin/cli.py b/airflow/bin/cli.py
+index 662452e..0f0598d 100755
+--- a/airflow/bin/cli.py
++++ b/airflow/bin/cli.py
+@@ -894,6 +894,9 @@ def worker(args):
+         'concurrency': args.concurrency,
+     }
+ 
++    if args.hostname:
++        options['hostname'] = args.hostname
++
+     if args.daemon:
+         pid, stdout, stderr, log_file = setup_locations("worker", args.pid, args.stdout, args.stderr, args.log_file)
+         handle = setup_logging(log_file)
+@@ -1405,6 +1408,9 @@ class CLIFactory(object):
+             type=int,
+             help="The number of worker processes",
+             default=conf.get('celery', 'celeryd_concurrency')),
++        'worker_hostname': Arg(
++            ('-hn', '--hostname'),
++            help="Set custom worker hostname"),
+         # flower
+         'broker_api': Arg(("-a", "--broker_api"), help="Broker api"),
+         'flower_hostname': Arg(
+@@ -1564,8 +1570,8 @@ class CLIFactory(object):
+         }, {
+             'func': worker,
+             'help': "Start a Celery worker node",
+-            'args': ('do_pickle', 'queues', 'concurrency',
+-                     'pid', 'daemon', 'stdout', 'stderr', 'log_file'),
++            'args': ('do_pickle', 'queues', 'concurrency', 'pid', 'daemon',
++                     'stdout', 'stderr', 'log_file', 'worker_hostname'),
+         }, {
+             'func': flower,
+             'help': "Start a Celery Flower",
