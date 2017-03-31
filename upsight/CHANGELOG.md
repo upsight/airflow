@@ -2,6 +2,10 @@
 
 ## Next release (in development)
 
+## 1.8.0-up1.2.0
+
+* Added support for `--hostname` when running worker ([DATA-2817](https://kontagent.jira.com/browse/DATA-2817))
+
 ## 1.8.0-up1.1.0
 
 * Pulled in airflow-1.8.0 (no changes from rc5)
