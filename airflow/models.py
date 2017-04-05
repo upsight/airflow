@@ -1380,7 +1380,7 @@ class TaskInstance(Base):
                     self.xcom_push(key=XCOM_RETURN_KEY, value=result)
 
                 task_copy.post_execute(context=context)
-                Stats.incr('operator_successes_{}'.format(
+                Stats.incr('operator_successes|op={}'.format(
                     self.task.__class__.__name__), 1, 1)
             self.state = State.SUCCESS
         except AirflowSkipException:
@@ -1421,7 +1421,7 @@ class TaskInstance(Base):
         session = settings.Session()
         self.end_date = datetime.now()
         self.set_duration()
-        Stats.incr('operator_failures_{}'.format(task.__class__.__name__), 1, 1)
+        Stats.incr('operator_failures|op={}'.format(task.__class__.__name__), 1, 1)
         if not test_mode:
             session.add(Log(State.FAILED, self))
 
@@ -4060,8 +4060,7 @@ class DagRun(Base):
                 for t in unfinished_tasks)
 
         duration = (datetime.now() - start_dttm).total_seconds() * 1000
-        Stats.timing("dagrun.dependency-check.{}.{}".
-                     format(self.dag_id, self.execution_date), duration)
+        Stats.timing("dagrun.dependency-check|dag={}".format(self.dag_id), duration)
 
         # future: remove the check on adhoc tasks (=active_tasks)
         if len(tis) == len(dag.active_tasks):

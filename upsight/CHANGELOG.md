@@ -2,6 +2,8 @@
 
 ## Next release (in development)
 
+* Make use of Stats+Bucky tag support [DATA-2853](https://kontagent.jira.com/browse/DATA-2853)
+
 ## 1.8.0-up1.2.0
 
 * Added support for `--hostname` when running worker ([DATA-2817](https://kontagent.jira.com/browse/DATA-2817))
