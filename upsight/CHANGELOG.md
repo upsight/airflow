@@ -2,6 +2,8 @@
 
 ## Next release (in development)
 
+## 1.8.0-up1.3.0
+
 * Make use of Stats+Bucky tag support [DATA-2853](https://kontagent.jira.com/browse/DATA-2853)
 * Support fetching of variables in templates by string ([DATA-2856](https://kontagent.jira.com/browse/DATA-2856))
 
