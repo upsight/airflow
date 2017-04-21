@@ -924,7 +924,17 @@ def worker(args):
         sp = subprocess.Popen([use_virtualenv('airflow'), 'serve_logs'],
                               env=env)
 
+        from celery.signals import worker_shutting_down
+
+        @worker_shutting_down.connect
+        def worker_shutting_down_handler(**kwargs):
+            logging.info('Received worker shutting down signal, killing Flask '
+                         'server for serving logs')
+            sp.kill()
+
         worker.run(**options)
+        logging.info('Worker shutdown, killing Flask server for serving logs '
+                     '(if not already killed)')
         sp.kill()
 
 

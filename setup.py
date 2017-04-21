@@ -105,7 +105,7 @@ async = [
     'gevent>=0.13'
 ]
 celery = [
-    'celery>=3.1.17',
+    'celery==4.0.2-up1.0.0',
     'flower>=0.7.3'
 ]
 cgroups = [

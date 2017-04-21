@@ -1,0 +1,35 @@
+diff --git a/airflow/bin/cli.py b/airflow/bin/cli.py
+index 0f0598d..c585033 100755
+--- a/airflow/bin/cli.py
++++ b/airflow/bin/cli.py
+@@ -924,7 +924,17 @@ def worker(args):
+         sp = subprocess.Popen([use_virtualenv('airflow'), 'serve_logs'],
+                               env=env)
+ 
++        from celery.signals import worker_shutting_down
++
++        @worker_shutting_down.connect
++        def worker_shutting_down_handler(**kwargs):
++            logging.info('Received worker shutting down signal, killing Flask '
++                         'server for serving logs')
++            sp.kill()
++
+         worker.run(**options)
++        logging.info('Worker shutdown, killing Flask server for serving logs '
++                     '(if not already killed)')
+         sp.kill()
+ 
+ 
+diff --git a/setup.py b/setup.py
+index f3eb195..303d3ec 100644
+--- a/setup.py
++++ b/setup.py
+@@ -105,7 +105,7 @@ async = [
+     'gevent>=0.13'
+ ]
+ celery = [
+-    'celery>=3.1.17',
++    'celery==4.0.2-up1.0.0',
+     'flower>=0.7.3'
+ ]
+ cgroups = [
