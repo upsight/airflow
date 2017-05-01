@@ -2,6 +2,9 @@
 
 ## Next release (in development)
 
+* Use forked celery-4.0.2-up1.0.0
+* Make sure Flask log server is killed at the start of a worker shutdown [DATA-2897](https://kontagent.jira.com/browse/DATA-2897)
+
 ## 1.8.0-up1.3.0
 
 * Make use of Stats+Bucky tag support [DATA-2853](https://kontagent.jira.com/browse/DATA-2853)
