@@ -2,6 +2,8 @@
 
 ## Next release (in development)
 
+## 1.8.0-up1.4.0
+
 * Use forked celery-4.0.2-up1.0.0
 * Make sure Flask log server is killed at the start of a worker shutdown [DATA-2897](https://kontagent.jira.com/browse/DATA-2897)
 
