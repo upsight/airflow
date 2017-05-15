@@ -5,6 +5,7 @@
 ## 1.8.1-up1.5.0
 
 * Pulled in apache-airflow-1.8.1
+* Split flower dependency from celery to avoid version conflicts with forked celery [DATA-2984](https://kontagent.jira.com/browse/DATA-2984)
 
 ## 1.8.0-up1.4.0
 

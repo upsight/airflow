@@ -116,7 +116,6 @@ async = [
 ]
 celery = [
     'celery==4.0.2-up1.0.0',
-    'flower>=0.7.3'
 ]
 cgroups = [
     'cgroupspy>=0.1.4',
@@ -132,6 +131,9 @@ doc = [
 docker = ['docker-py>=1.6.0']
 druid = ['pydruid>=0.2.1']
 emr = ['boto3>=1.0.0']
+flower = [
+    'flower>=0.7.3'
+]
 gcp_api = [
     'httplib2',
     'google-api-python-client>=1.5.0, <1.6.0',
@@ -251,6 +253,7 @@ def do_setup():
             'devel': devel_minreq,
             'devel_hadoop': devel_hadoop,
             'doc': doc,
+            'flower': flower,
             # 'docker': docker,
             # 'druid': druid,
             # 'emr': emr,
