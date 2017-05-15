@@ -15,9 +15,9 @@ pip install -e /opt/incubator-airflow
 Changes you make to Airflow likely require a restart of one or more components.
 
 ```bash
-sudo restart airflow-scheduler
-sudo restart airflow-webserver
-sudo restart airflow-worker
+sudo systemctl restart airflow-scheduler
+sudo systemctl restart airflow-webserver
+sudo systemctl restart airflow-worker
 ```
 
 ## Releasing
