@@ -2,6 +2,10 @@
 
 ## Next release (in development)
 
+## 1.8.1-up1.5.0
+
+* Pulled in apache-airflow-1.8.1
+
 ## 1.8.0-up1.4.0
 
 * Use forked celery-4.0.2-up1.0.0
