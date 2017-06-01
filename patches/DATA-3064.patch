@@ -1,0 +1,55 @@
+diff --git a/airflow/www/static/main.css b/airflow/www/static/main.css
+index 95864b4..05af0b4 100644
+--- a/airflow/www/static/main.css
++++ b/airflow/www/static/main.css
+@@ -257,3 +257,13 @@ div.square {
+ .sc { color: #BA2121 } /* Literal.String.Char */
+ .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+ .s2 { color: #BA2121 } /* Literal.String.Double */
++
++#environment {
++    pointer-events: none;
++}
++#environment.staging {
++    color: #e69ffd;
++}
++#environment.production {
++    color: #fba77f;
++}
+diff --git a/airflow/www/templates/admin/master.html b/airflow/www/templates/admin/master.html
+index 9c6f61d..1e07bf3 100644
+--- a/airflow/www/templates/admin/master.html
++++ b/airflow/www/templates/admin/master.html
+@@ -5,9 +5,9 @@
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+-  
++
+     http://www.apache.org/licenses/LICENSE-2.0
+-  
++
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+@@ -76,6 +76,7 @@
+         {% endblock %}
+         <!-- clock and logout -->
+         <ul class="nav navbar-nav navbar-right">
++        <li><a id="environment" class="{% if '.prod.' in hostname %}production{% elif '.stg.' in hostname %}staging{% endif %}">{{ hostname }}</a></li>
+             <li><a id="clock"></a></li>
+             {% if current_user.is_authenticated %}
+               <li><a href="{{ url_for('airflow.logout') }}"><span data-toggle="tooltip" data-placement="left" title="Logout" class="glyphicon glyphicon-off"></span></a></li>
+diff --git a/airflow/www/templates/airflow/version.html b/airflow/www/templates/airflow/version.html
+index f294635..4b20d69 100644
+--- a/airflow/www/templates/airflow/version.html
++++ b/airflow/www/templates/airflow/version.html
+@@ -20,7 +20,7 @@
+     <h2>{{ title }}</h2>
+ 	{% set version_label = 'Version' %}
+     {% if airflow_version %}
+-        <h4>{{ version_label }} : <a href="https://pypi.python.org/pypi/airflow/{{ airflow_version }}">{{ airflow_version }}</a></h4>
++        <h4>{{ version_label }} : <a href="https://stash.eng.upsight.com/projects/TP/repos/incubator-airflow/browse/upsight/CHANGELOG.md?at=refs%2Ftags%2Fv{{ airflow_version }}">{{ airflow_version }}</a></h4>
+     {% else %}
+         <h4>{{ version_label }} : Not Available</h4>
+     {% endif %}

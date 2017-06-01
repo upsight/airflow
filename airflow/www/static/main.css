@@ -257,3 +257,13 @@ div.square {
 .sc { color: #BA2121 } /* Literal.String.Char */
 .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
 .s2 { color: #BA2121 } /* Literal.String.Double */
+
+#environment {
+    pointer-events: none;
+}
+#environment.staging {
+    color: #e69ffd;
+}
+#environment.production {
+    color: #fba77f;
+}
