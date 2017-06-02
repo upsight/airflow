@@ -2,6 +2,8 @@
 
 ## Next release (in development)
 
+## 1.8.1-up1.6.0
+
 * Show hostname on top navigation bar, colored based on environment [DATA-3064](https://kontagent.jira.com/browse/DATA-3064)
 * Airflow version link on About page should go to changelog in Stash for that tag [DATA-3064](https://kontagent.jira.com/browse/DATA-3064)
 
