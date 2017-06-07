@@ -2,6 +2,8 @@
 
 ## Next release (in development)
 
+## 1.8.1-up1.7.0
+
 * Include base DAG folder in template search path [DATA-3074](https://kontagent.jira.com/browse/DATA-3074)
 
 ## 1.8.1-up1.6.0
