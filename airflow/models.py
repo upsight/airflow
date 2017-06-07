@@ -3009,7 +3009,7 @@ class DAG(BaseDag, LoggingMixin):
         Returns a jinja2 Environment while taking into account the DAGs
         template_searchpath and user_defined_macros
         """
-        searchpath = [self.folder]
+        searchpath = [self.folder, settings.DAGS_FOLDER]
         if self.template_searchpath:
             searchpath += self.template_searchpath
 

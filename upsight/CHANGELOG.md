@@ -2,6 +2,8 @@
 
 ## Next release (in development)
 
+* Include base DAG folder in template search path [DATA-3074](https://kontagent.jira.com/browse/DATA-3074)
+
 ## 1.8.1-up1.6.0
 
 * Show hostname on top navigation bar, colored based on environment [DATA-3064](https://kontagent.jira.com/browse/DATA-3064)
