@@ -1822,8 +1822,9 @@ class BackfillJob(BaseJob):
             active_dag_runs.append(run)
 
             for ti in run.get_task_instances():
-                # all tasks part of the backfill are scheduled to run
-                if ti.state == State.NONE:
+                # only backfill cleared task instances
+                # unless it is part of a sub DAG, then clear everything!
+                if ti.state == State.NONE or '.' in ti.dag_id:
                     ti.set_state(State.SCHEDULED, session=session)
                 tasks_to_run[ti.key] = ti
 
