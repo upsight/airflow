@@ -2,6 +2,10 @@
 
 ## Next release (in development)
 
+## 1.8.1-up1.8.0
+
+* Fix retrying for SubDagOperator task instances ([DATA-3429](https://kontagent.jira.com/browse/DATA-3429))
+
 ## 1.8.1-up1.7.0
 
 * Include base DAG folder in template search path ([DATA-3074](https://kontagent.jira.com/browse/DATA-3074))
