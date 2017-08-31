@@ -1,0 +1,13 @@
+diff --git a/airflow/www/views.py b/airflow/www/views.py
+index 3ed58a8..cc5b4f1 100644
+--- a/airflow/www/views.py
++++ b/airflow/www/views.py
+@@ -720,7 +720,7 @@ class Airflow(BaseView):
+             host = ti.hostname
+             log_loaded = False
+ 
+-            if os.path.exists(loc):
++            if host == socket.getfqdn():
+                 try:
+                     f = open(loc)
+                     log += "".join(f.readlines())

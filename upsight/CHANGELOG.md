@@ -2,6 +2,10 @@
 
 ## Next release (in development)
 
+## 1.8.1-up1.9.0
+
+* Ensure UI always shows logs for the latest attempt in UI ([DATA-3439](https://kontagent.jira.com/browse/DATA-3439))
+
 ## 1.8.1-up1.8.0
 
 * Fix retrying for SubDagOperator task instances ([DATA-3429](https://kontagent.jira.com/browse/DATA-3429))
