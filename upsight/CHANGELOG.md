@@ -2,6 +2,10 @@
 
 ## Next release (in development)
 
+## 1.8.2-up1.10.0
+
+* Pulled in apache-airflow-1.8.2 ([DATA-3085](https://kontagent.jira.com/browse/DATA-3085))
+
 ## 1.8.1-up1.9.0
 
 * Ensure UI always shows logs for the latest attempt in UI ([DATA-3439](https://kontagent.jira.com/browse/DATA-3439))
@@ -21,12 +25,12 @@
 
 ## 1.8.1-up1.5.0
 
-* Pulled in apache-airflow-1.8.1
+* Pulled in apache-airflow-1.8.1 ([DATA-2826](https://kontagent.jira.com/browse/DATA-2826))
 * Split flower dependency from celery to avoid version conflicts with forked celery ([DATA-2984](https://kontagent.jira.com/browse/DATA-2984))
 
 ## 1.8.0-up1.4.0
 
-* Use forked celery-4.0.2-up1.0.0
+* Use forked celery-4.0.2-up1.0.0 ([DATA-2883](https://kontagent.jira.com/browse/DATA-2883))
 * Make sure Flask log server is killed at the start of a worker shutdown ([DATA-2897](https://kontagent.jira.com/browse/DATA-2897))
 
 ## 1.8.0-up1.3.0
