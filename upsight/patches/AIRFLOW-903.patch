@@ -1,0 +1,65 @@
+diff --git a/airflow/configuration.py b/airflow/configuration.py
+index d661782..8b52f75 100644
+--- a/airflow/configuration.py
++++ b/airflow/configuration.py
+@@ -260,6 +260,10 @@ filter_by_owner = False
+ # in order to user the ldapgroup mode.
+ owner_mode = user
+ 
++# Default DAG view.  Valid values are:
++# tree, graph, duration, gantt, landing_times
++dag_default_view = tree
++
+ # Default DAG orientation. Valid values are:
+ # LR (Left->Right), TB (Top->Bottom), RL (Right->Left), BT (Bottom->Top)
+ dag_orientation = LR
+@@ -476,6 +480,7 @@ base_url = http://localhost:8080
+ web_server_host = 0.0.0.0
+ web_server_port = 8080
+ dag_orientation = LR
++dag_default_view = tree
+ log_fetch_timeout_sec = 5
+ hide_paused_dags_by_default = False
+ 
+diff --git a/airflow/models.py b/airflow/models.py
+index a148b28..01a9e44 100755
+--- a/airflow/models.py
++++ b/airflow/models.py
+@@ -2701,6 +2701,8 @@ class DAG(BaseDag, LoggingMixin):
+     :param sla_miss_callback: specify a function to call when reporting SLA
+         timeouts.
+     :type sla_miss_callback: types.FunctionType
++    :param default_view: Specify DAG default view (tree, graph, duration, gantt, landing_times)
++    :type default_view: string
+     :param orientation: Specify DAG orientation in graph view (LR, TB, RL, BT)
+     :type orientation: string
+     :param catchup: Perform scheduler catchup (or only run latest)? Defaults to True
+@@ -2722,6 +2724,7 @@ class DAG(BaseDag, LoggingMixin):
+                 'core', 'max_active_runs_per_dag'),
+             dagrun_timeout=None,
+             sla_miss_callback=None,
++            default_view=configuration.get('webserver', 'dag_default_view').lower(),
+             orientation=configuration.get('webserver', 'dag_orientation'),
+             catchup=configuration.getboolean('scheduler', 'catchup_by_default'),
+             params=None):
+@@ -2766,6 +2769,7 @@ class DAG(BaseDag, LoggingMixin):
+         self.max_active_runs = max_active_runs
+         self.dagrun_timeout = dagrun_timeout
+         self.sla_miss_callback = sla_miss_callback
++        self.default_view = default_view
+         self.orientation = orientation
+         self.catchup = catchup
+         self.is_subdag = False  # DagBag.bag_dag() will set this to True if appropriate
+diff --git a/airflow/www/templates/airflow/dags.html b/airflow/www/templates/airflow/dags.html
+index 16bbfb0..5f7c64c 100644
+--- a/airflow/www/templates/airflow/dags.html
++++ b/airflow/www/templates/airflow/dags.html
+@@ -73,7 +73,7 @@
+                 <!-- Column 3: Name -->
+                 <td>
+                     {% if dag_id in webserver_dags %}
+-                    <a href="{{ url_for('airflow.tree', dag_id=dag.dag_id) }}" title="{{ dag.description }}">
++                    <a href="{{ url_for('airflow.'+dag.default_view, dag_id=dag.dag_id) }}" title="{{ dag.description }}">
+                         {{ dag_id }}
+                     </a>
+                     {% else %}
