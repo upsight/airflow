@@ -2,6 +2,8 @@
 
 ## Next release (in development)
 
+* Pulled in [AIRFLOW-1059](https://issues.apache.org/jira/browse/AIRFLOW-1059), [AIRFLOW-1112](https://issues.apache.org/jira/browse/AIRFLOW-1112), [AIRFLOW-1334](https://issues.apache.org/jira/browse/AIRFLOW-1334), and [AIRFLOW-1345](https://issues.apache.org/jira/browse/AIRFLOW-1345) from upstream ([DATA-3487](https://kontagent.jira.com/browse/DATA-3487))
+
 ## 1.8.2-up1.10.0
 
 * Pulled in apache-airflow-1.8.2 ([DATA-3085](https://kontagent.jira.com/browse/DATA-3085))
