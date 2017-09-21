@@ -2,6 +2,10 @@
 
 ## Next release (in development)
 
+## 1.8.2-up1.13.0
+
+* Pulled in [AIRFLOW-1627](https://issues.apache.org/jira/browse/AIRFLOW-1627) ([DATA-3500](https://kontagent.jira.com/browse/DATA-3500))
+
 ## 1.8.2-up1.12.0
 
 * Pulled in [AIRFLOW-1614](https://issues.apache.org/jira/browse/AIRFLOW-1614) ([DATA-3490](https://kontagent.jira.com/browse/DATA-3490))
