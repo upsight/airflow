@@ -28,6 +28,7 @@ import math
 import json
 import bleach
 from collections import defaultdict
+import pprint
 
 import inspect
 from textwrap import dedent
@@ -1315,10 +1316,12 @@ class Airflow(BaseView):
         )
         dr_choices = []
         dr_state = None
+        dr_conf = None
         for dr in drs:
             dr_choices.append((dr.execution_date.isoformat(), dr.run_id))
             if dttm == dr.execution_date:
                 dr_state = dr.state
+                dr_conf = dr.conf
 
         class GraphForm(Form):
             execution_date = SelectField("DAG run", choices=dr_choices)
@@ -1346,6 +1349,7 @@ class Airflow(BaseView):
         session.commit()
         session.close()
         doc_md = markdown.markdown(dag.doc_md) if hasattr(dag, 'doc_md') and dag.doc_md else ''
+        dr_conf = pprint.pformat(dr_conf, indent=4) if dr_conf else ''
 
         return self.render(
             'airflow/graph.html',
@@ -1356,6 +1360,7 @@ class Airflow(BaseView):
             execution_date=dttm.isoformat(),
             state_token=state_token(dr_state),
             doc_md=doc_md,
+            dr_conf=dr_conf,
             arrange=arrange,
             operators=sorted(
                 list(set([op.__class__ for op in dag.tasks])),
