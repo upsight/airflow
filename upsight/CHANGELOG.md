@@ -2,6 +2,10 @@
 
 ## Next release (in development)
 
+## 1.8.2-up1.14.0
+
+* Display DAG run conf in the graph UI view ([DATA-3267](https://kontagent.jira.com/browse/DATA-3267))
+
 ## 1.8.2-up1.13.0
 
 * Pulled in [AIRFLOW-1627](https://issues.apache.org/jira/browse/AIRFLOW-1627) ([DATA-3500](https://kontagent.jira.com/browse/DATA-3500))
