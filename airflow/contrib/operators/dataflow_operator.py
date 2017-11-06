@@ -14,7 +14,9 @@
 
 import copy
 import re
+import uuid
 
+from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
 from airflow.contrib.hooks.gcp_dataflow_hook import DataFlowHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
@@ -107,6 +109,9 @@ class DataFlowJavaOperator(BaseOperator):
         self.options = options
 
     def execute(self, context):
+        bucket_helper = GoogleCloudBucketHelper(
+            self.gcp_conn_id, self.delegate_to)
+        self.jar = bucket_helper.google_cloud_to_local(self.jar)
         hook = DataFlowHook(gcp_conn_id=self.gcp_conn_id,
                             delegate_to=self.delegate_to)
 
@@ -117,6 +122,8 @@ class DataFlowJavaOperator(BaseOperator):
 
 
 class DataFlowPythonOperator(BaseOperator):
+
+    template_fields = ['options', 'dataflow_default_options']
 
     @apply_defaults
     def __init__(
@@ -168,6 +175,9 @@ class DataFlowPythonOperator(BaseOperator):
 
     def execute(self, context):
         """Execute the python dataflow job."""
+        bucket_helper = GoogleCloudBucketHelper(
+            self.gcp_conn_id, self.delegate_to)
+        self.py_file = bucket_helper.google_cloud_to_local(self.py_file)
         hook = DataFlowHook(gcp_conn_id=self.gcp_conn_id,
                             delegate_to=self.delegate_to)
         dataflow_options = self.dataflow_default_options.copy()
@@ -180,3 +190,48 @@ class DataFlowPythonOperator(BaseOperator):
         hook.start_python_dataflow(
             self.task_id, formatted_options,
             self.py_file, self.py_options)
+
+
+class GoogleCloudBucketHelper():
+    """GoogleCloudStorageHook helper class to download GCS object."""
+    GCS_PREFIX_LENGTH = 5
+
+    def __init__(self,
+                 gcp_conn_id='google_cloud_default',
+                 delegate_to=None):
+        self._gcs_hook = GoogleCloudStorageHook(gcp_conn_id, delegate_to)
+
+    def google_cloud_to_local(self, file_name):
+        """
+        Checks whether the file specified by file_name is stored in Google Cloud
+        Storage (GCS), if so, downloads the file and saves it locally. The full
+        path of the saved file will be returned. Otherwise the local file_name
+        will be returned immediately.
+
+        :param file_name: The full path of input file.
+        :type file_name: string
+        :return: The full path of local file.
+        :type: string
+        """
+        if not file_name.startswith('gs://'):
+            return file_name
+
+        # Extracts bucket_id and object_id by first removing 'gs://' prefix and
+        # then split the remaining by path delimiter '/'.
+        path_components = file_name[self.GCS_PREFIX_LENGTH:].split('/')
+        if path_components < 2:
+            raise Exception(
+                'Invalid Google Cloud Storage (GCS) object path: {}.'
+                .format(file_name))
+
+        bucket_id = path_components[0]
+        object_id = '/'.join(path_components[1:])
+        local_file = '/tmp/dataflow{}-{}'.format(str(uuid.uuid1())[:8],
+                                                 path_components[-1])
+        file_size = self._gcs_hook.download(bucket_id, object_id, local_file)
+
+        if file_size > 0:
+            return local_file
+        raise Exception(
+            'Failed to download Google Cloud Storage GCS object: {}'
+            .format(file_name))

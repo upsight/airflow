@@ -87,7 +87,7 @@ class MySqlTest(unittest.TestCase):
                 h.bulk_load("test_airflow", t.name)
                 c.execute("SELECT dummy FROM test_airflow")
                 results = tuple(result[0] for result in c.fetchall())
-                assert sorted(records) == sorted(results)
+                self.assertEqual(sorted(results), sorted(records))
 
     def test_mysql_to_mysql(self):
         sql = "SELECT * FROM INFORMATION_SCHEMA.TABLES LIMIT 100;"
@@ -281,5 +281,21 @@ class TransferTests(unittest.TestCase):
             recreate=False,
             create=True,
             delimiter=",",
+            dag=self.dag)
+        t.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+
+    def test_mysql_to_hive_tblproperties(self):
+        # import airflow.operators
+        from airflow.operators.mysql_to_hive import MySqlToHiveTransfer
+        sql = "SELECT * FROM baby_names LIMIT 1000;"
+        t = MySqlToHiveTransfer(
+            task_id='test_m2h',
+            mysql_conn_id='airflow_ci',
+            hive_cli_conn_id='beeline_default',
+            sql=sql,
+            hive_table='test_mysql_to_hive',
+            recreate=True,
+            delimiter=",",
+            tblproperties={'test_property':'test_value'},
             dag=self.dag)
         t.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
