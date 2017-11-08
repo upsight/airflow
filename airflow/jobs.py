@@ -373,6 +373,7 @@ class DagFileProcessor(AbstractDagFileProcessor):
             sys.stderr = f
 
             try:
+                settings.engine.dispose()
                 # Re-configure logging to use the new output streams
                 log_format = settings.LOG_FORMAT_WITH_THREAD_NAME
                 settings.configure_logging(log_format=log_format)
@@ -404,6 +405,8 @@ class DagFileProcessor(AbstractDagFileProcessor):
                 sys.stdout = original_stdout
                 sys.stderr = original_stderr
                 f.close()
+                # child is done with connection pool
+                settings.engine.dispose()
 
         p = multiprocessing.Process(target=helper,
                                     args=(),
