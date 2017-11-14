@@ -13,8 +13,10 @@
 # limitations under the License.
 #
 import logging
-import socket
+import signal
 import six
+import socket
+import sys
 
 from flask import Flask
 from flask_admin import Admin, base
@@ -33,6 +35,9 @@ from airflow import configuration
 
 
 def create_app(config=None, testing=False):
+    # cleanup connections
+    signal.signal(signal.SIGTERM, sigterm_handler)
+
     app = Flask(__name__)
     app.secret_key = configuration.get('webserver', 'SECRET_KEY')
     app.config['LOGIN_DISABLED'] = not configuration.getboolean('webserver', 'AUTHENTICATE')
@@ -151,6 +156,11 @@ def create_app(config=None, testing=False):
             settings.Session.remove()
 
         return app
+
+
+def sigterm_handler(signal, frame):
+    settings.engine.dispose()
+    sys.exit(0)
 
 app = None
 
