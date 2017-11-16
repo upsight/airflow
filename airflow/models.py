@@ -1490,7 +1490,7 @@ class TaskInstance(Base, LoggingMixin):
                     else:
                         raise
 
-                Stats.incr('operator_successes_{}|op={}'.format(
+                Stats.incr('operator_successes|op={}'.format(
                     self.task.__class__.__name__), 1, 1)
                 Stats.incr('ti_successes')
             self.refresh_from_db(lock_for_update=True)
@@ -1575,7 +1575,7 @@ class TaskInstance(Base, LoggingMixin):
         session = settings.Session()
         self.end_date = datetime.utcnow()
         self.set_duration()
-        Stats.incr('operator_failures_{}|op={}'.format(task.__class__.__name__), 1, 1)
+        Stats.incr('operator_failures|op={}'.format(task.__class__.__name__), 1, 1)
         Stats.incr('ti_failures')
         if not test_mode:
             session.add(Log(State.FAILED, self))
@@ -4595,8 +4595,7 @@ class DagRun(Base, LoggingMixin):
                     break
 
         duration = (datetime.utcnow() - start_dttm).total_seconds() * 1000
-        Stats.timing("dagrun.dependency-check.{}.{}".
-                     format(self.dag_id, self.execution_date), duration)
+        Stats.timing("dagrun.dependency-check|dag=.{}".format(self.dag_id), duration)
 
         # future: remove the check on adhoc tasks (=active_tasks)
         if len(tis) == len(dag.active_tasks):
