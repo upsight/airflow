@@ -7,6 +7,10 @@
 * Pulled in airflow-1.9.0rc2 ([DATA-3640][https://kontagent.jira.com/browse/DATA-3640])
 * Update version so that it adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 
+## 1.8.2-up1.15.0
+
+* Pulled in [AIRFLOW-1559](https://issues.apache.org/jira/browse/AIRFLOW-1559) ([DATA-3676](https://kontagent.jira.com/browse/DATA-3676))
+
 ## 1.8.2-up1.14.0
 
 * Display DAG run conf in the graph UI view ([DATA-3267](https://kontagent.jira.com/browse/DATA-3267))
