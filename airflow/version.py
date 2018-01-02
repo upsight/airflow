@@ -13,4 +13,4 @@
 # limitations under the License.
 #
 
-version = '1.9.0rc3+up2.0.0dev0'
+version = '1.9.0rc8+up2.0.0dev0'

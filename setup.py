@@ -211,7 +211,7 @@ def do_setup():
         scripts=['airflow/bin/airflow'],
         install_requires=[
             'alembic>=0.8.10.dev0',  # had issues with signing
-            'bleach==2.0.0',
+            'bleach==2.1.2',
             'configparser>=3.5.0, <3.6.0',
             'croniter>=0.3.17, <0.4',
             'dill>=0.2.2, <0.3',
