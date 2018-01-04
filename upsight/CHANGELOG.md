@@ -2,7 +2,7 @@
 
 ## Next release (in development)
 
-## 1.9.0-up2.0.0dev0
+## 1.9.0-up2.0.0
 
 * Pulled in airflow-1.9.0 ([DATA-3640][https://kontagent.jira.com/browse/DATA-3640])
 * Update version so that it adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
