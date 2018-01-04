@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 import signal
 import six
 import socket
@@ -21,14 +20,15 @@ import sys
 from flask import Flask
 from flask_admin import Admin, base
 from flask_cache import Cache
-from flask_wtf.csrf import CsrfProtect
-csrf = CsrfProtect()
+from flask_wtf.csrf import CSRFProtect
+csrf = CSRFProtect()
 
 import airflow
-from airflow import models
+from airflow import models, LoggingMixin
 from airflow.settings import Session
 
 from airflow.www.blueprints import routes
+from airflow.logging_config import configure_logging
 from airflow import jobs
 from airflow import settings
 from airflow import configuration
@@ -58,8 +58,7 @@ def create_app(config=None, testing=False):
 
     app.register_blueprint(routes)
 
-    log_format = airflow.settings.LOG_FORMAT_WITH_PID
-    airflow.settings.configure_logging(log_format=log_format)
+    configure_logging()
 
     with app.app_context():
         from airflow.www import views
@@ -77,7 +76,7 @@ def create_app(config=None, testing=False):
         av(vs.QueryView(name='Ad Hoc Query', category="Data Profiling"))
         av(vs.ChartModelView(
             models.Chart, Session, name="Charts", category="Data Profiling"))
-        av(vs.KnowEventView(
+        av(vs.KnownEventView(
             models.KnownEvent,
             Session, name="Known Events", category="Data Profiling"))
         av(vs.SlaMissModelView(
@@ -107,7 +106,7 @@ def create_app(config=None, testing=False):
             url='http://pythonhosted.org/airflow/'))
         admin.add_link(
             base.MenuLink(category='Docs',
-                name='Github',url='https://github.com/airbnb/airflow'))
+                name='Github',url='https://github.com/apache/incubator-airflow'))
 
         av(vs.VersionView(name='Version', category="About"))
 
@@ -119,16 +118,17 @@ def create_app(config=None, testing=False):
 
         def integrate_plugins():
             """Integrate plugins to the context"""
+            log = LoggingMixin().log
             from airflow.plugins_manager import (
                 admin_views, flask_blueprints, menu_links)
             for v in admin_views:
-                logging.debug('Adding view ' + v.name)
+                log.debug('Adding view %s', v.name)
                 admin.add_view(v)
             for bp in flask_blueprints:
-                logging.debug('Adding blueprint ' + bp.name)
+                log.debug('Adding blueprint %s', bp.name)
                 app.register_blueprint(bp)
             for ml in sorted(menu_links, key=lambda x: x.name):
-                logging.debug('Adding menu link ' + ml.name)
+                log.debug('Adding menu link %s', ml.name)
                 admin.add_link(ml)
 
         integrate_plugins()

@@ -69,10 +69,10 @@ def git_version(version):
         import git
         repo = git.Repo('.git')
     except ImportError:
-        logger.warn('gitpython not found: Cannot compute the git version.')
+        logger.warning('gitpython not found: Cannot compute the git version.')
         return ''
     except Exception as e:
-        logger.warn('Git repo not found: Cannot compute the git version.')
+        logger.warning('Git repo not found: Cannot compute the git version.')
         return ''
     if repo:
         sha = repo.head.commit.hexsha
@@ -99,21 +99,12 @@ def write_version(filename=os.path.join(*['airflow',
     with open(filename, 'w') as a:
         a.write(text)
 
-
-def check_previous():
-    installed_packages = ([package.project_name for package
-                           in pip.get_installed_distributions()])
-    if 'airflow' in installed_packages:
-        print("An earlier non-apache version of Airflow was installed, "
-              "please uninstall it first. Then reinstall.")
-        sys.exit(1)
-
-
 async = [
     'greenlet>=0.4.9',
 #   'eventlet>= 0.9.7',
     'gevent>=0.13'
 ]
+azure = ['azure-storage>=0.34.0']
 celery = [
     'celery==4.0.2-up1.0.0',
 ]
@@ -121,15 +112,18 @@ cgroups = [
     'cgroupspy>=0.1.4',
 ]
 crypto = ['cryptography>=0.9.3']
+dask = [
+    'distributed>=1.15.2, <2'
+    ]
+databricks = ['requests>=2.5.1, <3']
 datadog = ['datadog>=0.14.0']
 doc = [
     'sphinx>=1.2.3',
     'sphinx-argparse>=0.1.13',
-#   'sphinx-rtd-theme>=0.1.6',
-#   'Sphinx-PyPI-upload>=0.2.1'
+    'sphinx-rtd-theme>=0.1.6',
+    'Sphinx-PyPI-upload>=0.2.1'
 ]
 docker = ['docker-py>=1.6.0']
-druid = ['pydruid>=0.2.1']
 emr = ['boto3>=1.0.0']
 flower = [
     'flower>=0.7.3'
@@ -150,12 +144,13 @@ hive = [
     'impyla>=0.13.3',
     'unicodecsv>=0.14.1'
 ]
-jdbc = ['jaydebeapi>=0.2.0']
+jdbc = ['jaydebeapi>=1.1.1']
 mssql = ['pymssql>=2.1.1', 'unicodecsv>=0.14.1']
 mysql = ['mysqlclient>=1.3.6']
 rabbitmq = ['librabbitmq>=1.6.1']
 oracle = ['cx_Oracle>=5.1.2']
-postgres = ['psycopg2>=2.6']
+postgres = ['psycopg2>=2.7.1']
+ssh = ['paramiko>=2.1.1']
 salesforce = ['simple-salesforce>=0.72']
 s3 = [
     'boto>=2.36.0',
@@ -179,42 +174,46 @@ password = [
 github_enterprise = ['Flask-OAuthlib>=0.9.1']
 qds = ['qds-sdk>=1.9.6']
 cloudant = ['cloudant>=0.5.9,<2.0'] # major update coming soon, clamp to 0.x
+redis = ['redis>=2.10.5']
 
-# all_dbs = postgres + mysql + hive + mssql + hdfs + vertica + cloudant
-all_dbs = mysql + hive + hdfs
+all_dbs = postgres + mysql + hive + mssql + hdfs + vertica + cloudant
 devel = [
     'click',
     'freezegun',
-#   'jira',
+    'jira',
     'lxml>=3.3.4',
     'mock',
-    'moto',
+    'moto==1.1.19',
     'nose',
     'nose-ignore-docstring==0.2',
-    'nose-parameterized',
+    'nose-timer',
+    'parameterized',
+    'rednose',
+    'paramiko',
+    'requests_mock'
 ]
 devel_minreq = devel + mysql + doc + s3 + cgroups
 devel_hadoop = devel_minreq + hive + hdfs + webhdfs + kerberos
-# devel_all = devel + all_dbs + doc + samba + s3 + slack + crypto + oracle + docker
-devel_all = devel + all_dbs + doc + s3 + crypto
+devel_all = devel + all_dbs + doc + samba + s3 + slack + crypto + oracle + docker + ssh
 
 
 def do_setup():
-    check_previous()
     write_version()
     setup(
         name='apache-airflow',
         description='Programmatically author, schedule and monitor data pipelines',
         license='Apache License 2.0',
         version=version,
-        packages=find_packages(),
+        packages=find_packages(exclude=['tests*']),
         package_data={'': ['airflow/alembic.ini', "airflow/git_version"]},
         include_package_data=True,
         zip_safe=False,
         scripts=['airflow/bin/airflow'],
         install_requires=[
             'alembic>=0.8.10.dev0',  # had issues with signing
-            'croniter>=0.3.8, <0.4',
+            'bleach==2.1.2',
+            'configparser>=3.5.0, <3.6.0',
+            'croniter>=0.3.17, <0.4',
             'dill>=0.2.2, <0.3',
             'flask>=0.11, <0.12',
             'flask-admin==1.4.1',
@@ -223,9 +222,9 @@ def do_setup():
             'flask-swagger==0.2.13',
             'flask-wtf==0.14',
             'funcsigs==1.0.0',
-            'future>=0.15.0, <0.16',
+            'future>=0.16.0, <0.17',
             'gitpython>=2.0.2',
-            'gunicorn>=19.3.0, <19.4.0',  # 19.4.? seemed to have issues
+            'gunicorn>=19.4.0, <20.0',
             'jinja2>=2.7.3, <2.9.0',
             'lxml>=3.6.0, <4.0',
             'markdown==2.5.2',
@@ -239,31 +238,32 @@ def do_setup():
             'setproctitle>=1.1.8, <2',
             'sqlalchemy>=0.9.8',
             'tabulate>=0.7.5, <0.8.0',
-            'thrift>=0.9.2, <0.10',
+            'thrift>=0.9.2',
             'zope.deprecation>=4.0, <5.0',
         ],
         extras_require={
-            'all': devel_all,
-            'all_dbs': all_dbs,
+            # 'all': devel_all,
+            # 'all_dbs': all_dbs,
             'async': async,
+            # 'azure': azure,
             'celery': celery,
             'cgroups': cgroups,
             # 'cloudant': cloudant,
             'crypto': crypto,
+            # 'dask': dask,
+            # 'databricks': databricks,
             # 'datadog': datadog,
-            'devel': devel_minreq,
-            'devel_hadoop': devel_hadoop,
-            'doc': doc,
-            'flower': flower,
+            # 'devel': devel_minreq,
+            # 'devel_hadoop': devel_hadoop,
+            # 'doc': doc,
             # 'docker': docker,
-            # 'druid': druid,
             # 'emr': emr,
             # 'gcp_api': gcp_api,
             # 'github_enterprise': github_enterprise,
             'hdfs': hdfs,
             'hive': hive,
-            'jdbc': jdbc,
-            'kerberos': kerberos,
+            # 'jdbc': jdbc,
+            # 'kerberos': kerberos,
             # 'ldap': ldap,
             # 'mssql': mssql,
             'mysql': mysql,
@@ -271,16 +271,18 @@ def do_setup():
             # 'password': password,
             # 'postgres': postgres,
             # 'qds': qds,
-            'rabbitmq': rabbitmq,
+            # 'rabbitmq': rabbitmq,
             'sentry': sentry,
-            's3': s3,
+            # 's3': s3,
             # 'salesforce': salesforce,
             # 'samba': samba,
             # 'slack': slack,
+            # 'ssh': ssh,
             'statsd': statsd,
             # 'vertica': vertica,
-            'webhdfs': webhdfs,
+            # 'webhdfs': webhdfs,
             # 'jira': jira,
+            # 'redis': redis,
         },
         classifiers=[
             'Development Status :: 5 - Production/Stable',

@@ -26,7 +26,7 @@ complicated, a line by line explanation follows below.
         'owner': 'airflow',
         'depends_on_past': False,
         'start_date': datetime(2015, 6, 1),
-        'email': ['airflow@airflow.com'],
+        'email': ['airflow@example.com'],
         'email_on_failure': False,
         'email_on_retry': False,
         'retries': 1,
@@ -117,7 +117,7 @@ of default parameters that we can use when creating tasks.
         'owner': 'airflow',
         'depends_on_past': False,
         'start_date': datetime(2015, 6, 1),
-        'email': ['airflow@airflow.com'],
+        'email': ['airflow@example.com'],
         'email_on_failure': False,
         'email_on_retry': False,
         'retries': 1,
@@ -195,7 +195,8 @@ templates.
 This tutorial barely scratches the surface of what you can do with
 templating in Airflow, but the goal of this section is to let you know
 this feature exists, get you familiar with double curly brackets, and
-point to the most common template variable: ``{{ ds }}``.
+point to the most common template variable: ``{{ ds }}`` (today's "date
+stamp").
 
 .. code:: python
 
@@ -288,7 +289,7 @@ something like this:
         'owner': 'airflow',
         'depends_on_past': False,
         'start_date': datetime(2015, 6, 1),
-        'email': ['airflow@airflow.com'],
+        'email': ['airflow@example.com'],
         'email_on_failure': False,
         'email_on_retry': False,
         'retries': 1,
