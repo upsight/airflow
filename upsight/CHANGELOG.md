@@ -2,6 +2,10 @@
 
 ## Next release (in development)
 
+## 1.9.0-up2.0.1
+
+* Repatch fetching variable by string in templates ([DATA-2856](https://kontagent.jira.com/browse/DATA-2856))
+
 ## 1.9.0-up2.0.0
 
 * Pulled in airflow-1.9.0 ([DATA-3640][https://kontagent.jira.com/browse/DATA-3640])
