@@ -2,11 +2,15 @@
 
 ## Next release (in development)
 
-## 1.9.0-up2.0.1
+## 1.9.0+up2.0.2
+
+* Repatch displaying DAG run conf in UI ([DATA-3267](https://kontagent.jira.com/browse/DATA-3267))
+
+## 1.9.0+up2.0.1
 
 * Repatch fetching variable by string in templates ([DATA-2856](https://kontagent.jira.com/browse/DATA-2856))
 
-## 1.9.0-up2.0.0
+## 1.9.0+up2.0.0
 
 * Pulled in airflow-1.9.0 ([DATA-3640][https://kontagent.jira.com/browse/DATA-3640])
 * Update version so that it adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
