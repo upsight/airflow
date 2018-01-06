@@ -2101,8 +2101,9 @@ class BackfillJob(BaseJob):
 
         # TODO(edgarRd): AIRFLOW-1464 change to batch query to improve perf
         for ti in dag_run.get_task_instances():
-            # all tasks part of the backfill are scheduled to run
-            if ti.state == State.NONE:
+            # only backfill cleared task instances
+            # unless it is part of a sub DAG, then clear everything!
+            if ti.state == State.NONE or '.' in ti.dag_id:
                 ti.set_state(State.SCHEDULED, session=session)
             tasks_to_run[ti.key] = ti
 

@@ -2,6 +2,10 @@
 
 ## Next release (in development)
 
+## 1.9.0+up2.0.3
+
+* Repatch retrying of SubDAGs ([DATA-3429](https://kontagent.jira.com/browse/DATA-3429))
+
 ## 1.9.0+up2.0.2
 
 * Repatch displaying DAG run conf in UI ([DATA-3267](https://kontagent.jira.com/browse/DATA-3267))
