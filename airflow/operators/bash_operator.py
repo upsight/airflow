@@ -94,10 +94,13 @@ class BashOperator(BaseOperator):
 
                 self.sp = sp
 
-                self.log.info("Output:")
+                # TODO: quick fix targeting kafka sync compact task
+                self.log.info("Output (with truncated long log lines):")
                 line = ''
                 for line in iter(sp.stdout.readline, b''):
                     line = line.decode(self.output_encoding).strip()
+                    if len(line) > 10000:
+                        line = line[:10000] + '...line too long to log...'
                     self.log.info(line)
                 sp.wait()
                 self.log.info(
