@@ -2,9 +2,13 @@
 
 ## Next release (in development)
 
+## 1.9.0+up2.0.5
+
+* Revert quick fix for long lines crashing tasks, getting rid of logexec instead ([DATA-3766](https://kontagent.jira.com/browse/DATA-3766))
+
 ## 1.9.0+up2.0.4
 
-* Quick fix for long lines crashing tasks
+* Quick fix for long lines crashing tasks ([DATA-3766](https://kontagent.jira.com/browse/DATA-3766))
 
 ## 1.9.0+up2.0.3
 
