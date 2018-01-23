@@ -2,6 +2,8 @@
 
 ## Next release (in development)
 
+* Log environment in BashOperator when it exists ([DATA-3453](https://kontagent.jira.com/browse/DATA-3453))
+
 ## 1.9.0+up2.0.5
 
 * Revert quick fix for long lines crashing tasks, getting rid of logexec instead ([DATA-3766](https://kontagent.jira.com/browse/DATA-3766))
