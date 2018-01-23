@@ -1,6 +1,7 @@
 # Changelog
 
 ## Next release (in development)
+* Switch celery dependency from forked internal version back to officially released version 4.1.0 ([DATA-3288](https://kontagent.jira.com/browse/DATA-3288))
 
 ## 1.9.0+up2.0.5
 
