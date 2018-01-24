@@ -106,7 +106,7 @@ async = [
 ]
 azure = ['azure-storage>=0.34.0']
 celery = [
-    'celery==4.0.2-up1.0.0',
+    'celery>=4.1.0, <5.0.0',
 ]
 cgroups = [
     'cgroupspy>=0.1.4',
