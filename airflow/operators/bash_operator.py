@@ -86,6 +86,9 @@ class BashOperator(BaseOperator):
                             signal.signal(getattr(signal, sig), signal.SIG_DFL)
                     os.setsid()
                 self.log.info("Running command: %s", bash_command)
+                if self.env:
+                    self.log.info('Environment: \n%s', '\n'.join(
+                        [k + '=' + v for k, v in self.env.iteritems()]))
                 sp = Popen(
                     ['bash', fname],
                     stdout=PIPE, stderr=STDOUT,
