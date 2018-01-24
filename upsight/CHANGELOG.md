@@ -1,8 +1,10 @@
 # Changelog
 
 ## Next release (in development)
-* Switch celery dependency from forked internal version back to officially released version 4.1.0 ([DATA-3288](https://kontagent.jira.com/browse/DATA-3288))
 
+## 1.9.0+up2.1.0
+
+* Switch celery dependency from forked internal version back to officially released version 4.1.0 ([DATA-3288](https://kontagent.jira.com/browse/DATA-3288))
 * Log environment in BashOperator when it exists ([DATA-3453](https://kontagent.jira.com/browse/DATA-3453))
 
 ## 1.9.0+up2.0.5
