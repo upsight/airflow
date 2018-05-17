@@ -2,6 +2,10 @@
 
 ## Next release (in development)
 
+## 1.9.0+up2.1.1
+
+* Adding log statement to when task instance is moved to REMOVE state
+
 ## 1.9.0+up2.1.0
 
 * Switch celery dependency from forked internal version back to officially released version 4.1.0 ([DATA-3288](https://kontagent.jira.com/browse/DATA-3288))
