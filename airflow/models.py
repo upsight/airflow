@@ -4686,8 +4686,10 @@ class DagRun(Base, LoggingMixin):
             task_ids.append(ti.task_id)
             try:
                 dag.get_task(ti.task_id)
-            except AirflowException:
+            except AirflowException as e2:
                 if self.state is not State.RUNNING and not dag.partial:
+                    self.log.error('Setting task instance %s state to REMOVED', ti)
+                    self.log.exception(e2)
                     ti.state = State.REMOVED
 
         # check for missing tasks
