@@ -2,6 +2,10 @@
 
 ## Next release (in development)
 
+## 1.9.0+up20180627.1
+
+* Use /opt/upsight-hive/bin/hive (instead of "just hive on PATH") so that HiveOperator works.
+
 ## 1.9.0+up2.1.1
 
 * Adding log statement to when task instance is moved to REMOVE state
