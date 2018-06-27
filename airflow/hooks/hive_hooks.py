@@ -91,7 +91,7 @@ class HiveCliHook(BaseHook):
         This function creates the command list from available information
         """
         conn = self.conn
-        hive_bin = 'hive'
+        hive_bin = '/opt/upsight-hive/bin/hive'
         cmd_extra = []
 
         if self.use_beeline:
