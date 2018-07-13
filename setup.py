@@ -157,7 +157,7 @@ s3 = [
     'filechunkio>=1.6',
 ]
 samba = ['pysmbclient>=0.1.3']
-sentry = ['raven[flask]==5.32.0']
+sentry = ['raven[flask]==6.9.0']
 slack = ['slackclient>=1.0.0']
 statsd = ['statsd>=3.0.1, <4.0']
 vertica = ['vertica-python>=0.5.1']
