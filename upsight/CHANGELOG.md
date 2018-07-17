@@ -2,6 +2,10 @@
 
 ## Next release (in development)
 
+## 1.9.0+up20180717.1
+
+* Limiting sqlalchemy version to <1.2.0
+
 ## 1.9.0+up20180627.1
 
 * Use /opt/upsight-hive/bin/hive (instead of "just hive on PATH") so that HiveOperator works.
