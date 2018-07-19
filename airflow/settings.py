@@ -125,7 +125,7 @@ def configure_orm(disable_connection_pool=False):
     global engine
     global Session
     engine_args = {}
-    if disable_connection_pool:
+    if disable_connection_pool or not conf.getboolean('core', 'SQL_ALCHEMY_USE_CONNECTION_POOL'):
         engine_args['poolclass'] = NullPool
     elif 'sqlite' not in SQL_ALCHEMY_CONN:
         # Engine args not supported by sqlite
