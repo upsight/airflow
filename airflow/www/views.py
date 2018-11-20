@@ -76,7 +76,8 @@ from airflow.utils.json import json_ser
 from airflow.utils.state import State
 from airflow.utils.db import provide_session
 from airflow.utils.helpers import alchemy_to_dict
-from airflow.utils.dates import infer_time_unit, scale_time_units
+from airflow.utils.dates import (
+    infer_time_unit, parse_execution_date, scale_time_units)
 from airflow.www import utils as wwwutils
 from airflow.www.forms import DateTimeForm, DateTimeWithNumRunsForm
 from airflow.www.validators import GreaterEqualThan
@@ -2531,8 +2532,8 @@ class TaskInstanceModelView(ModelViewOnly):
             TI = models.TaskInstance
             count = len(ids)
             for id in ids:
-                task_id, dag_id, execution_date = id.split(',')
-                execution_date = datetime.strptime(execution_date, '%Y-%m-%d %H:%M:%S')
+                task_id, dag_id, execution_date = iterdecode(id)
+                execution_date = parse_execution_date(execution_date)
                 ti = session.query(TI).filter(TI.task_id == task_id,
                                               TI.dag_id == dag_id,
                                               TI.execution_date == execution_date).one()
@@ -2551,8 +2552,8 @@ class TaskInstanceModelView(ModelViewOnly):
             TI = models.TaskInstance
             count = 0
             for id in ids:
-                task_id, dag_id, execution_date = id.split(',')
-                execution_date = datetime.strptime(execution_date, '%Y-%m-%d %H:%M:%S')
+                task_id, dag_id, execution_date = iterdecode(id)
+                execution_date = parse_execution_date(execution_date)
                 count += session.query(TI).filter(TI.task_id == task_id,
                                                   TI.dag_id == dag_id,
                                                   TI.execution_date == execution_date).delete()

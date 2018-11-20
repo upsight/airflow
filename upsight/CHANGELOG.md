@@ -2,6 +2,8 @@
 
 ## Next release (in development)
 
+* APP-10825 Fixing issues with updating state of a task
+
 ## 1.9.0+up20180723.1
 
 * DATA-4106 Adding option to disable connection pool

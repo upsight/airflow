@@ -1,0 +1,90 @@
+commit 6c255e62f55c23e12db0f81b86d2f134d0b93ce4
+Author: Nathan Ostgard <nathan.ostgard@upsight.com>
+Date:   Tue Nov 20 11:34:06 2018 -0800
+
+    [APP-10825] Apply patches to fix bugs with task state changes
+    
+    This includes fixes from these two upstream tickets:
+    https://issues.apache.org/jira/browse/AIRFLOW-1787
+    https://issues.apache.org/jira/browse/AIRFLOW-2160
+
+diff --git a/airflow/utils/dates.py b/airflow/utils/dates.py
+index 43b87f4b..1b0efe22 100644
+--- a/airflow/utils/dates.py
++++ b/airflow/utils/dates.py
+@@ -225,3 +225,21 @@ def days_ago(n, hour=0, minute=0, second=0, microsecond=0):
+         second=second,
+         microsecond=microsecond)
+     return today - timedelta(days=n)
++
++
++def parse_execution_date(execution_date_str):
++    """
++    Parse execution date string to datetime object.
++    """
++    formats = [
++        '%Y-%m-%d %H:%M:%S',
++        '%Y-%m-%d %H:%M:%S.%f',
++        '%Y-%m-%d %H:%M:%S..%f',
++    ]
++    for format in formats:
++        try:
++            return datetime.strptime(execution_date_str, format)
++        except ValueError:
++            pass
++    raise ValueError("execution date {} didn't match expected formats".format(
++        execution_date_str))
+diff --git a/airflow/www/views.py b/airflow/www/views.py
+index f9449ab4..a8fb5fe9 100644
+--- a/airflow/www/views.py
++++ b/airflow/www/views.py
+@@ -76,7 +76,8 @@ from airflow.utils.json import json_ser
+ from airflow.utils.state import State
+ from airflow.utils.db import provide_session
+ from airflow.utils.helpers import alchemy_to_dict
+-from airflow.utils.dates import infer_time_unit, scale_time_units
++from airflow.utils.dates import (
++    infer_time_unit, parse_execution_date, scale_time_units)
+ from airflow.www import utils as wwwutils
+ from airflow.www.forms import DateTimeForm, DateTimeWithNumRunsForm
+ from airflow.www.validators import GreaterEqualThan
+@@ -2531,8 +2532,8 @@ class TaskInstanceModelView(ModelViewOnly):
+             TI = models.TaskInstance
+             count = len(ids)
+             for id in ids:
+-                task_id, dag_id, execution_date = id.split(',')
+-                execution_date = datetime.strptime(execution_date, '%Y-%m-%d %H:%M:%S')
++                task_id, dag_id, execution_date = iterdecode(id)
++                execution_date = parse_execution_date(execution_date)
+                 ti = session.query(TI).filter(TI.task_id == task_id,
+                                               TI.dag_id == dag_id,
+                                               TI.execution_date == execution_date).one()
+@@ -2551,8 +2552,8 @@ class TaskInstanceModelView(ModelViewOnly):
+             TI = models.TaskInstance
+             count = 0
+             for id in ids:
+-                task_id, dag_id, execution_date = id.split(',')
+-                execution_date = datetime.strptime(execution_date, '%Y-%m-%d %H:%M:%S')
++                task_id, dag_id, execution_date = iterdecode(id)
++                execution_date = parse_execution_date(execution_date)
+                 count += session.query(TI).filter(TI.task_id == task_id,
+                                                   TI.dag_id == dag_id,
+                                                   TI.execution_date == execution_date).delete()
+diff --git a/tests/utils/test_dates.py b/tests/utils/test_dates.py
+index 13230349..b1a3e584 100644
+--- a/tests/utils/test_dates.py
++++ b/tests/utils/test_dates.py
+@@ -40,3 +40,13 @@ class Dates(unittest.TestCase):
+         self.assertTrue(
+             dates.days_ago(0, microsecond=3)
+             == today_midnight + timedelta(microseconds=3))
++
++    def test_parse_execution_date(self):
++        execution_date_str_wo_ms = '2017-11-02 00:00:00'
++        execution_date_str_w_ms = '2017-11-05 16:18:30.989729'
++        execution_date_str_w_dot_ms = '2017-11-05 16:18:30..989729'
++        bad_execution_date_str = '2017-11-06T00:00:00Z'
++        self.assertEqual(datetime(2017, 11, 2, 0, 0, 0), dates.parse_execution_date(execution_date_str_wo_ms))
++        self.assertEqual(datetime(2017, 11, 5, 16, 18, 30, 989729), dates.parse_execution_date(execution_date_str_w_ms))
++        self.assertEqual(datetime(2017, 11, 5, 16, 18, 30, 989729), dates.parse_execution_date(execution_date_str_w_dot_ms))
++        self.assertRaises(ValueError, dates.parse_execution_date, bad_execution_date_str)
