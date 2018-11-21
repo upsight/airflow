@@ -225,3 +225,21 @@ def days_ago(n, hour=0, minute=0, second=0, microsecond=0):
         second=second,
         microsecond=microsecond)
     return today - timedelta(days=n)
+
+
+def parse_execution_date(execution_date_str):
+    """
+    Parse execution date string to datetime object.
+    """
+    formats = [
+        '%Y-%m-%d %H:%M:%S',
+        '%Y-%m-%d %H:%M:%S.%f',
+        '%Y-%m-%d %H:%M:%S..%f',
+    ]
+    for format in formats:
+        try:
+            return datetime.strptime(execution_date_str, format)
+        except ValueError:
+            pass
+    raise ValueError("execution date {} didn't match expected formats".format(
+        execution_date_str))
