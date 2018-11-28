@@ -2,6 +2,8 @@
 
 ## Next release (in development)
 
+## 1.9.0+up20181128.1
+
 * APP-10825 Fixing issues with updating state of a task
 
 ## 1.9.0+up20180723.1
