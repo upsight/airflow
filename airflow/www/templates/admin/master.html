@@ -30,9 +30,8 @@
     x = new Date()
     var UTCseconds = (x.getTime() + x.getTimezoneOffset()*60*1000);
     $("#clock").clock({
-        "seconds":"false",
-        "calendar":"false",
-        "format":"24",
+        "dateFormat":"Y-m-d ",
+        "timeFormat":"H:i:s %UTC%",
         "timestamp":UTCseconds
     }).click(function(){
         alert('{{ hostname }}');
@@ -52,7 +51,7 @@
 {% block page_body %}
 <div class="container">
 
-<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation" style="background-color: {{ navbar_color }};">
     <div class="container">
       <!-- Brand and toggle get grouped for better mobile display -->
       <div class="navbar-header">
@@ -65,7 +64,11 @@
           <a class="navbar-brand" rel="home" href="{{ url_for('admin.index') }}" style="cursor: pointer;">
               <img style="float: left; width:35px; margin-top: -7px;"
                    src="{{ url_for("static", filename="pin_100.png") }}"
-                   title="{{ current_user.username }}">
+                   {% if current_user.user is defined %}
+                      title="{{ current_user.user.username }}"
+                   {% else %}
+                      title="{{ current_user.username }}"
+                   {% endif %}>
               <span>Airflow</span>
           </a>
       </div>
@@ -87,7 +90,7 @@
         <li><a id="environment" class="{% if '.prod.' in hostname %}production{% elif '.stg.' in hostname %}staging{% endif %}">{{ hostname }}</a></li>
             <li><a id="clock"></a></li>
             {% if current_user.is_authenticated %}
-              <li><a href="{{ url_for('airflow.logout') }}"><span data-toggle="tooltip" data-placement="left" title="Logout" class="glyphicon glyphicon-off"></span></a></li>
+              <li><a href="{{ url_for('airflow.logout') }}"><span data-toggle="tooltip" data-placement="left" title="Logout" class="glyphicon glyphicon-log-out"></span></a></li>
             {% endif %}
         </ul>
           <ul class="nav navbar-nav navbar-right">

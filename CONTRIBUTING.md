@@ -6,7 +6,7 @@ little bit helps, and credit will always be given.
 
 # Table of Contents
   * [TOC](#table-of-contents)
-  * [Types of Contributions](#types-of-contribution)
+  * [Types of Contributions](#types-of-contributions)
       - [Report Bugs](#report-bugs)
       - [Fix Bugs](#fix-bugs)
       - [Implement Features](#implement-features)
@@ -15,7 +15,7 @@ little bit helps, and credit will always be given.
   * [Documentation](#documentation)
   * [Development and Testing](#development-and-testing)
       - [Setting up a development environment](#setting-up-a-development-environment)
-      - [Pull requests guidelines](#pull-requests-guidelines)
+      - [Pull requests guidelines](#pull-request-guidelines)
       - [Testing Locally](#testing-locally)
   * [Changing the Metadata Database](#changing-the-metadata-database)
 
@@ -29,7 +29,6 @@ Report bugs through [Apache Jira](https://issues.apache.org/jira/browse/AIRFLOW)
 Please report relevant information and preferably code that exhibits
 the problem.
 
-
 ### Fix Bugs
 
 Look through the Jira issues for bugs. Anything is open to whoever wants
@@ -37,12 +36,11 @@ to implement it.
 
 ### Implement Features
 
-Look through the GitHub issues for features. Anything tagged with
-"feature" is open to whoever wants to implement it.
+Look through the [Apache Jira](https://issues.apache.org/jira/browse/AIRFLOW) for features. Any unassigned "Improvement" issue is open to whoever wants to implement it.
 
 We've created the operators, hooks, macros and executors we needed, but we
 made sure that this part of Airflow is extensible. New operators,
-hooks and operators are very welcomed!
+hooks, macros and executors are very welcomed!
 
 ### Improve Documentation
 
@@ -53,7 +51,7 @@ articles.
 
 ### Submit Feedback
 
-The best way to send feedback is to file an issue on Github.
+The best way to send feedback is to open an issue on [Apache Jira](https://issues.apache.org/jira/browse/AIRFLOW)
 
 If you are proposing a feature:
 
@@ -65,15 +63,57 @@ If you are proposing a feature:
 
 ## Documentation
 
-The latest API documentation is usually available [here](http://pythonhosted.org/airflow).
-To generate a local version, you need to have installed airflow with
-the `doc` extra. In that case you can generate the doc by running:
+The latest API documentation is usually available
+[here](https://airflow.incubator.apache.org/). To generate a local version,
+you need to have set up an Airflow development environemnt (see below). Also
+install the `doc` extra.
+
+    pip install -e .[doc]
+
+Generate the documentation by running:
 
     cd docs && ./build.sh
 
+Only a subset of the API reference documentation builds. Install additional
+extras to build the full API reference.
+
 ## Development and Testing
 
-### Setting up a development environment
+### Set up a development env using Docker
+
+Go to your Airflow directory and start a new docker container. You can choose between Python 2 or 3, whatever you prefer.
+
+```
+# Start docker in your Airflow directory
+docker run -t -i -v `pwd`:/airflow/ -w /airflow/ -e SLUGIFY_USES_TEXT_UNIDECODE=yes python:2 bash
+
+# Install Airflow with all the required dependencies,
+# including the devel which will provide the development tools
+pip install -e ".[hdfs,hive,druid,devel]"
+
+# Init the database
+airflow initdb
+
+nosetests -v tests/hooks/test_druid_hook.py
+
+  test_get_first_record (tests.hooks.test_druid_hook.TestDruidDbApiHook) ... ok
+  test_get_records (tests.hooks.test_druid_hook.TestDruidDbApiHook) ... ok
+  test_get_uri (tests.hooks.test_druid_hook.TestDruidDbApiHook) ... ok
+  test_get_conn_url (tests.hooks.test_druid_hook.TestDruidHook) ... ok
+  test_submit_gone_wrong (tests.hooks.test_druid_hook.TestDruidHook) ... ok
+  test_submit_ok (tests.hooks.test_druid_hook.TestDruidHook) ... ok
+  test_submit_timeout (tests.hooks.test_druid_hook.TestDruidHook) ... ok
+  test_submit_unknown_response (tests.hooks.test_druid_hook.TestDruidHook) ... ok
+
+  ----------------------------------------------------------------------
+  Ran 8 tests in 3.036s
+
+  OK
+```
+
+The Airflow code is mounted inside of the Docker container, so if you change something using your favorite IDE, you can directly test is in the container.
+
+### Set up a development env using Virtualenv
 
 Please install python(2.7.x or 3.4.x), mysql, and libxml by using system-level package
 managers like yum, apt-get for Linux, or homebrew for Mac OS at first.
@@ -123,7 +163,7 @@ which you can setup on your fork as well to check before you submit your
 PR. We currently enforce most [PEP8](https://www.python.org/dev/peps/pep-0008/)
 and a few other linting rules. It is usually a good idea to lint locally
 as well using [flake8](https://flake8.readthedocs.org/en/latest/)
-using `flake8 airflow tests`
+using `flake8 airflow tests`. `git diff upstream/master -u -- "*.py" | flake8 --diff` will return any changed files in your branch that require linting.
 9. Please read this excellent [article](http://chris.beams.io/posts/git-commit/) on
 commit messages and adhere to them. It makes the lives of those who
 come after you a lot easier.
@@ -134,6 +174,10 @@ come after you a lot easier.
 Tests can then be run with (see also the [Running unit tests](#running-unit-tests) section below):
 
     ./run_unit_tests.sh
+
+Individual test files can be run with:
+
+    nosetests [path to file]
 
 #### Running unit tests
 
