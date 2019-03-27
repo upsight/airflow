@@ -51,8 +51,9 @@ class DataprocClusterCreateOperator(BaseOperator):
     :type cluster_name: string
     :param project_id: The ID of the google cloud project in which
         to create the cluster. (templated)
-    :type project_id: string
-    :param num_workers: The # of workers to spin up
+    :type project_id: str
+    :param num_workers: The # of workers to spin up. If set to zero will
+        spin up cluster in a single node mode
     :type num_workers: int
     :param storage_bucket: The storage bucket to use, setting to None lets dataproc
         generate a custom one for you
@@ -68,17 +69,29 @@ class DataprocClusterCreateOperator(BaseOperator):
     :type metadata: dict
     :param image_version: the version of software inside the Dataproc cluster
     :type image_version: string
+    :param custom_image: custom Dataproc image for more info see
+        https://cloud.google.com/dataproc/docs/guides/dataproc-images
+    :type: custom_image: string
     :param properties: dict of properties to set on
         config files (e.g. spark-defaults.conf), see
-        https://cloud.google.com/dataproc/docs/reference/rest/v1/ \
-        projects.regions.clusters#SoftwareConfig
+        https://cloud.google.com/dataproc/docs/reference/rest/v1/projects.regions.clusters#SoftwareConfig
     :type properties: dict
     :param master_machine_type: Compute engine machine type to use for the master node
     :type master_machine_type: string
+    :param master_disk_type: Type of the boot disk for the master node
+        (default is ``pd-standard``).
+        Valid values: ``pd-ssd`` (Persistent Disk Solid State Drive) or
+        ``pd-standard`` (Persistent Disk Hard Disk Drive).
+    :type master_disk_type: string
     :param master_disk_size: Disk size for the master node
     :type master_disk_size: int
     :param worker_machine_type: Compute engine machine type to use for the worker nodes
     :type worker_machine_type: string
+    :param worker_disk_type: Type of the boot disk for the worker node
+        (default is ``pd-standard``).
+        Valid values: ``pd-ssd`` (Persistent Disk Solid State Drive) or
+        ``pd-standard`` (Persistent Disk Hard Disk Drive).
+    :type worker_disk_type: string
     :param worker_disk_size: Disk size for the worker nodes
     :type worker_disk_size: int
     :param num_preemptible_workers: The # of preemptible worker nodes to spin up
@@ -138,11 +151,14 @@ class DataprocClusterCreateOperator(BaseOperator):
                  init_actions_uris=None,
                  init_action_timeout="10m",
                  metadata=None,
+                 custom_image=None,
                  image_version=None,
                  properties=None,
                  master_machine_type='n1-standard-4',
+                 master_disk_type='pd-standard',
                  master_disk_size=500,
                  worker_machine_type='n1-standard-4',
+                 worker_disk_type='pd-standard',
                  worker_disk_size=500,
                  num_preemptible_workers=0,
                  labels=None,
@@ -168,11 +184,14 @@ class DataprocClusterCreateOperator(BaseOperator):
         self.init_actions_uris = init_actions_uris
         self.init_action_timeout = init_action_timeout
         self.metadata = metadata
+        self.custom_image = custom_image
         self.image_version = image_version
-        self.properties = properties
+        self.properties = properties or dict()
         self.master_machine_type = master_machine_type
+        self.master_disk_type = master_disk_type
         self.master_disk_size = master_disk_size
         self.worker_machine_type = worker_machine_type
+        self.worker_disk_type = worker_disk_type
         self.worker_disk_size = worker_disk_size
         self.labels = labels
         self.zone = zone
@@ -186,6 +205,19 @@ class DataprocClusterCreateOperator(BaseOperator):
         self.idle_delete_ttl = idle_delete_ttl
         self.auto_delete_time = auto_delete_time
         self.auto_delete_ttl = auto_delete_ttl
+        self.single_node = num_workers == 0
+
+        assert not (self.custom_image and self.image_version), \
+            "custom_image and image_version can't be both set"
+
+        assert (
+            not self.single_node or (
+                self.single_node and self.num_preemptible_workers == 0
+            )
+        ), "num_workers == 0 means single node mode - no preemptibles allowed"
+
+        assert not (self.custom_image and self.image_version), \
+            "custom_image and image_version can't be both set"
 
     def _get_cluster_list_for_project(self, service):
         result = service.projects().regions().clusters().list(
@@ -272,6 +304,7 @@ class DataprocClusterCreateOperator(BaseOperator):
                     'numInstances': 1,
                     'machineTypeUri': master_type_uri,
                     'diskConfig': {
+                        'bootDiskType': self.master_disk_type,
                         'bootDiskSizeGb': self.master_disk_size
                     }
                 },
@@ -279,6 +312,7 @@ class DataprocClusterCreateOperator(BaseOperator):
                     'numInstances': self.num_workers,
                     'machineTypeUri': worker_type_uri,
                     'diskConfig': {
+                        'bootDiskType': self.worker_disk_type,
                         'bootDiskSizeGb': self.worker_disk_size
                     }
                 },
@@ -292,6 +326,7 @@ class DataprocClusterCreateOperator(BaseOperator):
                 'numInstances': self.num_preemptible_workers,
                 'machineTypeUri': worker_type_uri,
                 'diskConfig': {
+                    'bootDiskType': self.worker_disk_type,
                     'bootDiskSizeGb': self.worker_disk_size
                 },
                 'isPreemptible': True
@@ -321,6 +356,17 @@ class DataprocClusterCreateOperator(BaseOperator):
             cluster_data['config']['gceClusterConfig']['tags'] = self.tags
         if self.image_version:
             cluster_data['config']['softwareConfig']['imageVersion'] = self.image_version
+        elif self.custom_image:
+            custom_image_url = 'https://www.googleapis.com/compute/beta/projects/' \
+                               '{}/global/images/{}'.format(self.project_id,
+                                                            self.custom_image)
+            cluster_data['config']['masterConfig']['imageUri'] = custom_image_url
+            if not self.single_node:
+                cluster_data['config']['workerConfig']['imageUri'] = custom_image_url
+
+        if self.single_node:
+            self.properties["dataproc:dataproc.allow.zero.workers"] = "true"
+
         if self.properties:
             cluster_data['config']['softwareConfig']['properties'] = self.properties
         if self.idle_delete_ttl:
@@ -395,14 +441,14 @@ class DataprocClusterScaleOperator(BaseOperator):
 
     **Example**: ::
 
-    t1 = DataprocClusterScaleOperator(
-            task_id='dataproc_scale',
-            project_id='my-project',
-            cluster_name='cluster-1',
-            num_workers=10,
-            num_preemptible_workers=10,
-            graceful_decommission_timeout='1h'
-            dag=dag)
+        t1 = DataprocClusterScaleOperator(
+                task_id='dataproc_scale',
+                project_id='my-project',
+                cluster_name='cluster-1',
+                num_workers=10,
+                num_preemptible_workers=10,
+                graceful_decommission_timeout='1h',
+                dag=dag)
 
     .. seealso::
         For more detail on about scaling clusters have a look at the reference:
@@ -491,7 +537,8 @@ class DataprocClusterScaleOperator(BaseOperator):
         }
         return scale_data
 
-    def _get_graceful_decommission_timeout(self, timeout):
+    @staticmethod
+    def _get_graceful_decommission_timeout(timeout):
         match = re.match(r"^(\d+)(s|m|h|d)$", timeout)
         if match:
             if match.group(2) == "s":
@@ -575,7 +622,8 @@ class DataprocClusterDeleteOperator(BaseOperator):
         self.project_id = project_id
         self.region = region
 
-    def _wait_for_done(self, service, operation_name):
+    @staticmethod
+    def _wait_for_done(service, operation_name):
         time.sleep(15)
         while True:
             response = service.projects().regions().operations().get(
@@ -668,7 +716,19 @@ class DataProcPigOperator(BaseOperator):
         delegation enabled.
     :type delegate_to: string
     :param region: The specified region where the dataproc cluster is created.
-    :type region: string
+    :type region: str
+    :param job_error_states: Job states that should be considered error states.
+        Any states in this list will result in an error being raised and failure of the
+        task. Eg, if the ``CANCELLED`` state should also be considered a task failure,
+        pass in ``['ERROR', 'CANCELLED']``. Possible values are currently only
+        ``'ERROR'`` and ``'CANCELLED'``, but could change in the future. Defaults to
+        ``['ERROR']``.
+    :type job_error_states: list
+    :var dataproc_job_id: The actual "jobId" as submitted to the Dataproc API.
+        This is useful for identifying or linking to the job in the Google Cloud Console
+        Dataproc UI, as the actual "jobId" submitted to the Dataproc API is appended with
+        an 8 character random string.
+    :vartype dataproc_job_id: string
     """
     template_fields = ['query', 'variables', 'job_name', 'cluster_name', 'dataproc_jars']
     template_ext = ('.pg', '.pig',)
@@ -687,6 +747,7 @@ class DataProcPigOperator(BaseOperator):
             gcp_conn_id='google_cloud_default',
             delegate_to=None,
             region='global',
+            job_error_states=['ERROR'],
             *args,
             **kwargs):
 
@@ -701,6 +762,7 @@ class DataProcPigOperator(BaseOperator):
         self.dataproc_properties = dataproc_pig_properties
         self.dataproc_jars = dataproc_pig_jars
         self.region = region
+        self.job_error_states = job_error_states
 
     def execute(self, context):
         hook = DataProcHook(gcp_conn_id=self.gcp_conn_id,
@@ -716,7 +778,10 @@ class DataProcPigOperator(BaseOperator):
         job.add_jar_file_uris(self.dataproc_jars)
         job.set_job_name(self.job_name)
 
-        hook.submit(hook.project_id, job.build(), self.region)
+        job_to_submit = job.build()
+        self.dataproc_job_id = job_to_submit["job"]["reference"]["jobId"]
+
+        hook.submit(hook.project_id, job_to_submit, self.region, self.job_error_states)
 
 
 class DataProcHiveOperator(BaseOperator):
@@ -748,7 +813,19 @@ class DataProcHiveOperator(BaseOperator):
         delegation enabled.
     :type delegate_to: string
     :param region: The specified region where the dataproc cluster is created.
-    :type region: string
+    :type region: str
+    :param job_error_states: Job states that should be considered error states.
+        Any states in this list will result in an error being raised and failure of the
+        task. Eg, if the ``CANCELLED`` state should also be considered a task failure,
+        pass in ``['ERROR', 'CANCELLED']``. Possible values are currently only
+        ``'ERROR'`` and ``'CANCELLED'``, but could change in the future. Defaults to
+        ``['ERROR']``.
+    :type job_error_states: list
+    :var dataproc_job_id: The actual "jobId" as submitted to the Dataproc API.
+        This is useful for identifying or linking to the job in the Google Cloud Console
+        Dataproc UI, as the actual "jobId" submitted to the Dataproc API is appended with
+        an 8 character random string.
+    :vartype dataproc_job_id: string
     """
     template_fields = ['query', 'variables', 'job_name', 'cluster_name', 'dataproc_jars']
     template_ext = ('.q',)
@@ -767,6 +844,7 @@ class DataProcHiveOperator(BaseOperator):
             gcp_conn_id='google_cloud_default',
             delegate_to=None,
             region='global',
+            job_error_states=['ERROR'],
             *args,
             **kwargs):
 
@@ -781,6 +859,7 @@ class DataProcHiveOperator(BaseOperator):
         self.dataproc_properties = dataproc_hive_properties
         self.dataproc_jars = dataproc_hive_jars
         self.region = region
+        self.job_error_states = job_error_states
 
     def execute(self, context):
         hook = DataProcHook(gcp_conn_id=self.gcp_conn_id,
@@ -797,7 +876,10 @@ class DataProcHiveOperator(BaseOperator):
         job.add_jar_file_uris(self.dataproc_jars)
         job.set_job_name(self.job_name)
 
-        hook.submit(hook.project_id, job.build(), self.region)
+        job_to_submit = job.build()
+        self.dataproc_job_id = job_to_submit["job"]["reference"]["jobId"]
+
+        hook.submit(hook.project_id, job_to_submit, self.region, self.job_error_states)
 
 
 class DataProcSparkSqlOperator(BaseOperator):
@@ -830,7 +912,19 @@ class DataProcSparkSqlOperator(BaseOperator):
         delegation enabled.
     :type delegate_to: string
     :param region: The specified region where the dataproc cluster is created.
-    :type region: string
+    :type region: str
+    :param job_error_states: Job states that should be considered error states.
+        Any states in this list will result in an error being raised and failure of the
+        task. Eg, if the ``CANCELLED`` state should also be considered a task failure,
+        pass in ``['ERROR', 'CANCELLED']``. Possible values are currently only
+        ``'ERROR'`` and ``'CANCELLED'``, but could change in the future. Defaults to
+        ``['ERROR']``.
+    :type job_error_states: list
+    :var dataproc_job_id: The actual "jobId" as submitted to the Dataproc API.
+        This is useful for identifying or linking to the job in the Google Cloud Console
+        Dataproc UI, as the actual "jobId" submitted to the Dataproc API is appended with
+        an 8 character random string.
+    :vartype dataproc_job_id: string
     """
     template_fields = ['query', 'variables', 'job_name', 'cluster_name', 'dataproc_jars']
     template_ext = ('.q',)
@@ -849,6 +943,7 @@ class DataProcSparkSqlOperator(BaseOperator):
             gcp_conn_id='google_cloud_default',
             delegate_to=None,
             region='global',
+            job_error_states=['ERROR'],
             *args,
             **kwargs):
 
@@ -863,6 +958,7 @@ class DataProcSparkSqlOperator(BaseOperator):
         self.dataproc_properties = dataproc_spark_properties
         self.dataproc_jars = dataproc_spark_jars
         self.region = region
+        self.job_error_states = job_error_states
 
     def execute(self, context):
         hook = DataProcHook(gcp_conn_id=self.gcp_conn_id,
@@ -879,7 +975,10 @@ class DataProcSparkSqlOperator(BaseOperator):
         job.add_jar_file_uris(self.dataproc_jars)
         job.set_job_name(self.job_name)
 
-        hook.submit(hook.project_id, job.build(), self.region)
+        job_to_submit = job.build()
+        self.dataproc_job_id = job_to_submit["job"]["reference"]["jobId"]
+
+        hook.submit(hook.project_id, job_to_submit, self.region, self.job_error_states)
 
 
 class DataProcSparkOperator(BaseOperator):
@@ -919,7 +1018,19 @@ class DataProcSparkOperator(BaseOperator):
         delegation enabled.
     :type delegate_to: string
     :param region: The specified region where the dataproc cluster is created.
-    :type region: string
+    :type region: str
+    :param job_error_states: Job states that should be considered error states.
+        Any states in this list will result in an error being raised and failure of the
+        task. Eg, if the ``CANCELLED`` state should also be considered a task failure,
+        pass in ``['ERROR', 'CANCELLED']``. Possible values are currently only
+        ``'ERROR'`` and ``'CANCELLED'``, but could change in the future. Defaults to
+        ``['ERROR']``.
+    :type job_error_states: list
+    :var dataproc_job_id: The actual "jobId" as submitted to the Dataproc API.
+        This is useful for identifying or linking to the job in the Google Cloud Console
+        Dataproc UI, as the actual "jobId" submitted to the Dataproc API is appended with
+        an 8 character random string.
+    :vartype dataproc_job_id: string
     """
 
     template_fields = ['arguments', 'job_name', 'cluster_name', 'dataproc_jars']
@@ -940,6 +1051,7 @@ class DataProcSparkOperator(BaseOperator):
             gcp_conn_id='google_cloud_default',
             delegate_to=None,
             region='global',
+            job_error_states=['ERROR'],
             *args,
             **kwargs):
 
@@ -956,6 +1068,7 @@ class DataProcSparkOperator(BaseOperator):
         self.dataproc_properties = dataproc_spark_properties
         self.dataproc_jars = dataproc_spark_jars
         self.region = region
+        self.job_error_states = job_error_states
 
     def execute(self, context):
         hook = DataProcHook(gcp_conn_id=self.gcp_conn_id,
@@ -970,7 +1083,10 @@ class DataProcSparkOperator(BaseOperator):
         job.add_file_uris(self.files)
         job.set_job_name(self.job_name)
 
-        hook.submit(hook.project_id, job.build(), self.region)
+        job_to_submit = job.build()
+        self.dataproc_job_id = job_to_submit["job"]["reference"]["jobId"]
+
+        hook.submit(hook.project_id, job_to_submit, self.region, self.job_error_states)
 
 
 class DataProcHadoopOperator(BaseOperator):
@@ -1010,7 +1126,19 @@ class DataProcHadoopOperator(BaseOperator):
         delegation enabled.
     :type delegate_to: string
     :param region: The specified region where the dataproc cluster is created.
-    :type region: string
+    :type region: str
+    :param job_error_states: Job states that should be considered error states.
+        Any states in this list will result in an error being raised and failure of the
+        task. Eg, if the ``CANCELLED`` state should also be considered a task failure,
+        pass in ``['ERROR', 'CANCELLED']``. Possible values are currently only
+        ``'ERROR'`` and ``'CANCELLED'``, but could change in the future. Defaults to
+        ``['ERROR']``.
+    :type job_error_states: list
+    :var dataproc_job_id: The actual "jobId" as submitted to the Dataproc API.
+        This is useful for identifying or linking to the job in the Google Cloud Console
+        Dataproc UI, as the actual "jobId" submitted to the Dataproc API is appended with
+        an 8 character random string.
+    :vartype dataproc_job_id: string
     """
 
     template_fields = ['arguments', 'job_name', 'cluster_name', 'dataproc_jars']
@@ -1031,6 +1159,7 @@ class DataProcHadoopOperator(BaseOperator):
             gcp_conn_id='google_cloud_default',
             delegate_to=None,
             region='global',
+            job_error_states=['ERROR'],
             *args,
             **kwargs):
 
@@ -1047,6 +1176,7 @@ class DataProcHadoopOperator(BaseOperator):
         self.dataproc_properties = dataproc_hadoop_properties
         self.dataproc_jars = dataproc_hadoop_jars
         self.region = region
+        self.job_error_states = job_error_states
 
     def execute(self, context):
         hook = DataProcHook(gcp_conn_id=self.gcp_conn_id,
@@ -1061,7 +1191,10 @@ class DataProcHadoopOperator(BaseOperator):
         job.add_file_uris(self.files)
         job.set_job_name(self.job_name)
 
-        hook.submit(hook.project_id, job.build(), self.region)
+        job_to_submit = job.build()
+        self.dataproc_job_id = job_to_submit["job"]["reference"]["jobId"]
+
+        hook.submit(hook.project_id, job_to_submit, self.region, self.job_error_states)
 
 
 class DataProcPySparkOperator(BaseOperator):
@@ -1101,7 +1234,19 @@ class DataProcPySparkOperator(BaseOperator):
         domain-wide delegation enabled.
     :type delegate_to: string
     :param region: The specified region where the dataproc cluster is created.
-    :type region: string
+    :type region: str
+    :param job_error_states: Job states that should be considered error states.
+        Any states in this list will result in an error being raised and failure of the
+        task. Eg, if the ``CANCELLED`` state should also be considered a task failure,
+        pass in ``['ERROR', 'CANCELLED']``. Possible values are currently only
+        ``'ERROR'`` and ``'CANCELLED'``, but could change in the future. Defaults to
+        ``['ERROR']``.
+    :type job_error_states: list
+    :var dataproc_job_id: The actual "jobId" as submitted to the Dataproc API.
+        This is useful for identifying or linking to the job in the Google Cloud Console
+        Dataproc UI, as the actual "jobId" submitted to the Dataproc API is appended with
+        an 8 character random string.
+    :vartype dataproc_job_id: string
     """
 
     template_fields = ['arguments', 'job_name', 'cluster_name', 'dataproc_jars']
@@ -1149,6 +1294,7 @@ class DataProcPySparkOperator(BaseOperator):
             gcp_conn_id='google_cloud_default',
             delegate_to=None,
             region='global',
+            job_error_states=['ERROR'],
             *args,
             **kwargs):
 
@@ -1165,6 +1311,7 @@ class DataProcPySparkOperator(BaseOperator):
         self.dataproc_properties = dataproc_pyspark_properties
         self.dataproc_jars = dataproc_pyspark_jars
         self.region = region
+        self.job_error_states = job_error_states
 
     def execute(self, context):
         hook = DataProcHook(
@@ -1192,7 +1339,10 @@ class DataProcPySparkOperator(BaseOperator):
         job.add_python_file_uris(self.pyfiles)
         job.set_job_name(self.job_name)
 
-        hook.submit(hook.project_id, job.build(), self.region)
+        job_to_submit = job.build()
+        self.dataproc_job_id = job_to_submit["job"]["reference"]["jobId"]
+
+        hook.submit(hook.project_id, job_to_submit, self.region, self.job_error_states)
 
 
 class DataprocWorkflowTemplateBaseOperator(BaseOperator):

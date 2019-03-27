@@ -31,8 +31,8 @@ class BigQueryToCloudStorageOperator(BaseOperator):
         https://cloud.google.com/bigquery/docs/reference/v2/jobs
 
     :param source_project_dataset_table: The dotted
-        (<project>.|<project>:)<dataset>.<table> BigQuery table to use as the source
-        data. If <project> is not included, project will be the project
+        ``(<project>.|<project>:)<dataset>.<table>`` BigQuery table to use as the
+        source data. If <project> is not included, project will be the project
         defined in the connection json. (templated)
     :type source_project_dataset_table: string
     :param destination_cloud_storage_uris: The destination Google Cloud
@@ -43,7 +43,7 @@ class BigQueryToCloudStorageOperator(BaseOperator):
     :param compression: Type of compression to use.
     :type compression: string
     :param export_format: File format to export.
-    :type field_delimiter: string
+    :type export_format: string
     :param field_delimiter: The delimiter to use when extracting to a CSV.
     :type field_delimiter: string
     :param print_header: Whether to print a header for a CSV file extract.
@@ -54,8 +54,12 @@ class BigQueryToCloudStorageOperator(BaseOperator):
         For this to work, the service account making the request must have domain-wide
         delegation enabled.
     :type delegate_to: string
+    :param labels: a dictionary containing labels for the job/query,
+        passed to BigQuery
+    :type labels: dict
     """
-    template_fields = ('source_project_dataset_table', 'destination_cloud_storage_uris')
+    template_fields = ('source_project_dataset_table',
+                       'destination_cloud_storage_uris', 'labels')
     template_ext = ('.sql',)
     ui_color = '#e4e6f0'
 
@@ -69,6 +73,7 @@ class BigQueryToCloudStorageOperator(BaseOperator):
                  print_header=True,
                  bigquery_conn_id='bigquery_default',
                  delegate_to=None,
+                 labels=None,
                  *args,
                  **kwargs):
         super(BigQueryToCloudStorageOperator, self).__init__(*args, **kwargs)
@@ -80,6 +85,7 @@ class BigQueryToCloudStorageOperator(BaseOperator):
         self.print_header = print_header
         self.bigquery_conn_id = bigquery_conn_id
         self.delegate_to = delegate_to
+        self.labels = labels
 
     def execute(self, context):
         self.log.info('Executing extract of %s into: %s',
@@ -95,4 +101,5 @@ class BigQueryToCloudStorageOperator(BaseOperator):
             self.compression,
             self.export_format,
             self.field_delimiter,
-            self.print_header)
+            self.print_header,
+            self.labels)

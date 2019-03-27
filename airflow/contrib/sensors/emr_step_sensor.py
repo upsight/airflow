@@ -32,8 +32,8 @@ class EmrStepSensor(EmrBaseSensor):
     :type step_id: string
     """
 
-    NON_TERMINAL_STATES = ['PENDING', 'RUNNING', 'CONTINUE']
-    FAILED_STATE = ['CANCELLED', 'FAILED']
+    NON_TERMINAL_STATES = ['PENDING', 'RUNNING', 'CONTINUE', 'CANCEL_PENDING']
+    FAILED_STATE = ['CANCELLED', 'FAILED', 'INTERRUPTED']
     template_fields = ['job_flow_id', 'step_id']
     template_ext = ()
 
@@ -53,5 +53,6 @@ class EmrStepSensor(EmrBaseSensor):
         self.log.info('Poking step %s on cluster %s', self.step_id, self.job_flow_id)
         return emr.describe_step(ClusterId=self.job_flow_id, StepId=self.step_id)
 
-    def state_from_response(self, response):
+    @staticmethod
+    def state_from_response(response):
         return response['Step']['Status']['State']

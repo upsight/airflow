@@ -24,10 +24,16 @@ from airflow.executors.celery_executor import CeleryExecutor
 from airflow.executors.celery_executor import app
 from airflow.utils.state import State
 
+from airflow import configuration
+configuration.load_test_config()
+
 # leave this it is used by the test worker
-import celery.contrib.testing.tasks
+import celery.contrib.testing.tasks  # noqa: F401
+
 
 class CeleryExecutorTest(unittest.TestCase):
+    @unittest.skipIf('sqlite' in configuration.conf.get('core', 'sql_alchemy_conn'),
+                     "sqlite is configured with SequentialExecutor")
     def test_celery_integration(self):
         executor = CeleryExecutor()
         executor.start()
@@ -40,7 +46,7 @@ class CeleryExecutorTest(unittest.TestCase):
             # errors are propagated for some reason
             try:
                 executor.execute_async(key='fail', command=fail_command)
-            except:
+            except Exception:
                 pass
             executor.running['success'] = True
             executor.running['fail'] = True
@@ -52,6 +58,9 @@ class CeleryExecutorTest(unittest.TestCase):
 
         self.assertNotIn('success', executor.tasks)
         self.assertNotIn('fail', executor.tasks)
+
+        self.assertNotIn('success', executor.last_state)
+        self.assertNotIn('fail', executor.last_state)
 
 
 if __name__ == '__main__':

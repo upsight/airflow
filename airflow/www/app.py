@@ -27,6 +27,7 @@ from flask_caching import Cache
 from flask_wtf.csrf import CSRFProtect
 from six.moves.urllib.parse import urlparse
 from werkzeug.wsgi import DispatcherMiddleware
+from werkzeug.contrib.fixers import ProxyFix
 
 import airflow
 from airflow import configuration as conf
@@ -48,6 +49,8 @@ def create_app(config=None, testing=False):
     signal.signal(signal.SIGTERM, sigterm_handler)
 
     app = Flask(__name__)
+    if configuration.conf.getboolean('webserver', 'ENABLE_PROXY_FIX'):
+        app.wsgi_app = ProxyFix(app.wsgi_app)
     app.secret_key = configuration.conf.get('webserver', 'SECRET_KEY')
     app.config['LOGIN_DISABLED'] = not configuration.conf.getboolean(
         'webserver', 'AUTHENTICATE')
@@ -63,8 +66,8 @@ def create_app(config=None, testing=False):
     api.load_auth()
     api.api_auth.init_app(app)
 
-    cache = Cache(
-        app=app, config={'CACHE_TYPE': 'filesystem', 'CACHE_DIR': '/tmp'})
+    # flake8: noqa: F841
+    cache = Cache(app=app, config={'CACHE_TYPE': 'filesystem', 'CACHE_DIR': '/tmp'})
 
     app.register_blueprint(routes)
 
@@ -114,11 +117,11 @@ def create_app(config=None, testing=False):
 
         admin.add_link(base.MenuLink(
             category='Docs', name='Documentation',
-            url='https://airflow.incubator.apache.org/'))
+            url='https://airflow.apache.org/'))
         admin.add_link(
             base.MenuLink(category='Docs',
                           name='Github',
-                          url='https://github.com/apache/incubator-airflow'))
+                          url='https://github.com/apache/airflow'))
 
         av(vs.VersionView(name='Version', category="About"))
 
@@ -149,11 +152,7 @@ def create_app(config=None, testing=False):
         # required for testing purposes otherwise the module retains
         # a link to the default_auth
         if app.config['TESTING']:
-            if six.PY2:
-                reload(e)
-            else:
-                import importlib
-                importlib.reload(e)
+            six.moves.reload_module(e)
 
         app.register_blueprint(e.api_experimental, url_prefix='/api/experimental')
 
