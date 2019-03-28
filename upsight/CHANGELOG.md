@@ -2,6 +2,10 @@
 
 ## Next release (in development)
 
+## 1.10.2+up20190328.1
+
+* Pulled in airflow-1.10.2.
+
 ## 1.9.0+up20181128.1
 
 * APP-10825 Fixing issues with updating state of a task
