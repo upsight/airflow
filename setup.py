@@ -159,7 +159,6 @@ azure_cosmos = ['azure-cosmos>=3.0.1']
 cassandra = ['cassandra-driver>=3.13.0']
 celery = [
     'celery>=4.1.1, <4.2.0',
-    'flower>=0.7.3, <1.0'
 ]
 cgroups = [
     'cgroupspy>=0.1.4',
@@ -188,7 +187,7 @@ elasticsearch = [
 ]
 emr = ['boto3>=1.0.0, <1.8.0']
 flower = [
-    'flower>=0.7.3'
+    'flower>=0.7.3, <1.0'
 ]
 gcp_api = [
     'httplib2>=0.9.2',

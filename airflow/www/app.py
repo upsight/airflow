@@ -17,6 +17,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+import signal
 import six
 import socket
 import sys
@@ -168,6 +169,11 @@ def create_app(config=None, testing=False):
             settings.Session.remove()
 
         return app
+
+
+def sigterm_handler(signal, frame):
+    settings.engine.dispose()
+    sys.exit(0)
 
 
 app = None

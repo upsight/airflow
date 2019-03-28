@@ -952,7 +952,7 @@ def webserver(args):
             stdout.close()
             stderr.close()
         else:
-            gunicorn_master_proc = subprocess.Popen(run_args, close_fds=True)
+            gunicorn_master_proc = subprocess.Popen(run_args, env=env, close_fds=True)
 
             signal.signal(signal.SIGINT, kill_proc)
             signal.signal(signal.SIGTERM, kill_proc)
@@ -1061,7 +1061,7 @@ def worker(args):
             stderr=stderr,
         )
         with ctx:
-            sp = subprocess.Popen(use_virtualenv(['airflow', 'serve_logs']),
+            sp = subprocess.Popen([use_virtualenv('airflow'), 'serve_logs'],
                                   env=env, close_fds=True)
             worker.run(**options)
             sp.kill()
@@ -1072,8 +1072,16 @@ def worker(args):
         signal.signal(signal.SIGINT, sigint_handler)
         signal.signal(signal.SIGTERM, sigint_handler)
 
-        sp = subprocess.Popen(use_virtualenv(['airflow', 'serve_logs']),
+        sp = subprocess.Popen([use_virtualenv('airflow'), 'serve_logs'],
                               env=env, close_fds=True)
+
+        from celery.signals import worker_shutting_down
+
+        @worker_shutting_down.connect
+        def worker_shutting_down_handler(**kwargs):
+            logging.info('Received worker shutting down signal, killing Flask '
+                         'server for serving logs')
+            sp.kill()
 
         worker.run(**options)
         logging.info('Worker shutdown, killing Flask server for serving logs '

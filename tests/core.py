@@ -531,6 +531,52 @@ class CoreTest(unittest.TestCase):
         t.execute = verify_templated_field
         t.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
 
+    def test_template_with_variable_get(self):
+        """
+        Test the availability of variables in templates using get() method
+        """
+        val = {
+            'success': False,
+            'test_value': 'a test value'
+        }
+        Variable.set('a_variable', val['test_value'])
+
+        def verify_templated_field(context):
+            self.assertEqual(context['ti'].task.some_templated_field,
+                             val['test_value'])
+            val['success'] = True
+
+        t = OperatorSubclass(
+            task_id='test_complex_template',
+            some_templated_field='{{ var.value.get("a_variable") }}',
+            on_success_callback=verify_templated_field,
+            dag=self.dag)
+        t.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE,
+              ignore_ti_state=True)
+        self.assertTrue(val['success'])
+
+    def test_template_with_variable_get_with_default(self):
+        """
+        Test the availability of variables in templates using get() method with
+        a default value
+        """
+        val = {
+            'success': False,
+        }
+
+        def verify_templated_field(context):
+            self.assertEqual(context['ti'].task.some_templated_field, 'N/A')
+            val['success'] = True
+
+        t = OperatorSubclass(
+            task_id='test_complex_template',
+            some_templated_field='{{ var.value.get("bad_variable", "N/A") }}',
+            on_success_callback=verify_templated_field,
+            dag=self.dag)
+        t.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE,
+              ignore_ti_state=True)
+        self.assertTrue(val['success'])
+
     def test_template_with_variable(self):
         """
         Test the availability of variables in templates
@@ -591,6 +637,56 @@ class CoreTest(unittest.TestCase):
             dag=self.dag)
         t.execute = verify_templated_field
         t.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+
+    def test_template_with_json_variable_get(self):
+        """
+        Test the availability of variables (serialized as JSON) in templates
+        using get() method
+        """
+        val = {
+            'success': False,
+            'test_value': {'foo': 'bar', 'obj': {'v1': 'yes', 'v2': 'no'}}
+        }
+        Variable.set('a_variable', val['test_value'], serialize_json=True)
+
+        def verify_templated_field(context):
+            self.assertEqual(context['ti'].task.some_templated_field,
+                             val['test_value']['obj']['v2'])
+            val['success'] = True
+
+        t = OperatorSubclass(
+            task_id='test_complex_template',
+            some_templated_field='{{ var.json.get("a_variable").obj.v2 }}',
+            on_success_callback=verify_templated_field,
+            dag=self.dag)
+        t.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE,
+              ignore_ti_state=True)
+        self.assertTrue(val['success'])
+
+    def test_template_with_json_variable_get_with_default(self):
+        """
+        Test the availability of variables (serialized as JSON) in templates
+        using get() method with a default value
+        """
+        val = {
+            'success': False,
+        }
+
+        def verify_templated_field(context):
+            self.assertEqual(context['ti'].task.some_templated_field,
+                             'unknown')
+            val['success'] = True
+
+        t = OperatorSubclass(
+            task_id='test_complex_template',
+            some_templated_field=(
+                '{{ var.json.get("bad_variable", {"obj": {"v2": "unknown"}})'
+                '.obj.v2 }}'),
+            on_success_callback=verify_templated_field,
+            dag=self.dag)
+        t.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE,
+              ignore_ti_state=True)
+        self.assertTrue(val['success'])
 
     def test_template_non_bool(self):
         """
