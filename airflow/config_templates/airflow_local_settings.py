@@ -1,16 +1,21 @@
 # -*- coding: utf-8 -*-
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
 import os
 
@@ -21,12 +26,16 @@ from airflow.utils.file import mkdirs
 # in this file instead of from airflow.cfg. Currently
 # there are other log format and level configurations in
 # settings.py and cli.py. Please see AIRFLOW-1455.
-
 LOG_LEVEL = conf.get('core', 'LOGGING_LEVEL').upper()
-LOG_FORMAT = conf.get('core', 'log_format')
+
+
+# Flask appbuilder's info level log is very verbose,
+# so it's set to 'WARN' by default.
+FAB_LOG_LEVEL = conf.get('core', 'FAB_LOGGING_LEVEL').upper()
+
+LOG_FORMAT = conf.get('core', 'LOG_FORMAT')
 
 BASE_LOG_FOLDER = conf.get('core', 'BASE_LOG_FOLDER')
-PROCESSOR_LOG_FOLDER = conf.get('scheduler', 'child_process_log_directory')
 
 PROCESSOR_LOG_FOLDER = conf.get('scheduler', 'CHILD_PROCESS_LOG_DIRECTORY')
 
@@ -54,55 +63,43 @@ DEFAULT_LOGGING_CONFIG = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'airflow.task': {
-            'format': LOG_FORMAT,
-        },
-        'airflow.processor': {
+        'airflow': {
             'format': LOG_FORMAT,
         },
     },
     'handlers': {
         'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'airflow.task',
-            'stream': 'ext://sys.stdout'
+            'class': 'airflow.utils.log.logging_mixin.RedirectStdHandler',
+            'formatter': 'airflow',
+            'stream': 'sys.stdout'
         },
-        'file.task': {
+        'task': {
             'class': 'airflow.utils.log.file_task_handler.FileTaskHandler',
-            'formatter': 'airflow.task',
+            'formatter': 'airflow',
             'base_log_folder': os.path.expanduser(BASE_LOG_FOLDER),
             'filename_template': FILENAME_TEMPLATE,
         },
-        'file.processor': {
+        'processor': {
             'class': 'airflow.utils.log.file_processor_handler.FileProcessorHandler',
-            'formatter': 'airflow.processor',
+            'formatter': 'airflow',
             'base_log_folder': os.path.expanduser(PROCESSOR_LOG_FOLDER),
             'filename_template': PROCESSOR_FILENAME_TEMPLATE,
         }
     },
     'loggers': {
-        '': {
-            'handlers': ['console'],
-            'level': LOG_LEVEL
-        },
-        'airflow': {
-            'handlers': ['console'],
+        'airflow.processor': {
+            'handlers': ['processor'],
             'level': LOG_LEVEL,
             'propagate': False,
-        },
-        'airflow.processor': {
-            'handlers': ['file.processor'],
-            'level': LOG_LEVEL,
-            'propagate': True,
         },
         'airflow.task': {
-            'handlers': ['file.task'],
+            'handlers': ['task'],
             'level': LOG_LEVEL,
             'propagate': False,
         },
-        'airflow.task_runner': {
-            'handlers': ['file.task'],
-            'level': LOG_LEVEL,
+        'flask_appbuilder': {
+            'handler': ['console'],
+            'level': FAB_LOG_LEVEL,
             'propagate': True,
         }
     },
@@ -195,7 +192,7 @@ REMOTE_HANDLERS = {
             'end_of_log_mark': END_OF_LOG_MARK,
             'host': ELASTICSEARCH_HOST,
         },
-    }
+    },
 }
 
 REMOTE_LOGGING = conf.get('core', 'remote_logging')
