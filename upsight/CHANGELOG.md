@@ -2,6 +2,10 @@
 
 ## Next release (in development)
 
+## 1.10.2+up20190329.1
+
+* Fixed merge conflict bug with aiflow_local_settings.py
+
 ## 1.10.2+up20190328.1
 
 * Pulled in airflow-1.10.2.
